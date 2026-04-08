@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { ensureProfileForUser } from "@/lib/supabase/profiles";
 import { createClient } from "@/lib/supabase/server";
 
 export async function loginAction(formData: FormData) {
@@ -18,10 +19,7 @@ export async function loginAction(formData: FormData) {
   }
 
   if (user) {
-    await supabase
-      .from("profiles")
-      .update({ last_active_at: new Date().toISOString() })
-      .eq("id", user.id);
+    await ensureProfileForUser(user);
   }
 
   redirect("/dashboard");

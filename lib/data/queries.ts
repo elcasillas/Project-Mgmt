@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { ensureProfileForUser } from "@/lib/supabase/profiles";
 import { isApproaching, isDueThisWeek, isOverdue } from "@/lib/utils/format";
 import type {
   ActivityLog,
@@ -156,12 +157,17 @@ export async function getCurrentProfile() {
       return null;
     }
 
-    const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+    const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
     if (error) {
       throw error;
     }
 
-    return data ? mapProfile(data) : null;
+    if (data) {
+      return mapProfile(data);
+    }
+
+    const repairedProfile = await ensureProfileForUser(user);
+    return repairedProfile ? mapProfile(repairedProfile) : null;
   } catch (error) {
     logQueryError("getCurrentProfile", error);
     throw error;

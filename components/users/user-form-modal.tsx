@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { FormField } from "@/components/shared/form-field";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,14 @@ export function UserFormModal({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const isEditing = Boolean(user);
+  const passwordHint = useMemo(
+    () =>
+      isEditing
+        ? "Leave blank to keep the current password. Use at least 8 characters with uppercase, lowercase, and a number."
+        : "Required. Use at least 8 characters with uppercase, lowercase, and a number.",
+    [isEditing]
+  );
 
   return (
     <>
@@ -33,8 +41,8 @@ export function UserFormModal({
       <Modal
         open={open}
         onClose={() => setOpen(false)}
-        title={user ? "Edit user" : "Add user"}
-        description="Manage workspace access, role assignment, and account status."
+        title={isEditing ? "Edit user" : "Add user"}
+        description="Manage workspace access, role assignment, account status, and sign-in credentials."
       >
         {error ? <p className="mb-4 rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p> : null}
         {success ? <p className="mb-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{success}</p> : null}
@@ -69,6 +77,12 @@ export function UserFormModal({
               ))}
             </Select>
           </FormField>
+          <FormField label={isEditing ? "New Password" : "Password"} hint={passwordHint}>
+            <Input name="password" type="password" autoComplete={isEditing ? "new-password" : "off"} />
+          </FormField>
+          <FormField label={isEditing ? "Confirm New Password" : "Confirm Password"}>
+            <Input name="confirm_password" type="password" autoComplete={isEditing ? "new-password" : "off"} />
+          </FormField>
           <div className="md:col-span-2 flex justify-end gap-3">
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
               Cancel
@@ -82,6 +96,19 @@ export function UserFormModal({
                 }
 
                 const formData = new FormData(formRef.current);
+                const password = String(formData.get("password") || "");
+                const confirmPassword = String(formData.get("confirm_password") || "");
+
+                if (!isEditing && !password) {
+                  setError("Password is required for new users.");
+                  return;
+                }
+
+                if (password !== confirmPassword) {
+                  setError("Password confirmation does not match.");
+                  return;
+                }
+
                 startTransition(async () => {
                   setError(null);
                   setSuccess(null);
@@ -91,7 +118,8 @@ export function UserFormModal({
                     last_name: String(formData.get("last_name") || ""),
                     email: String(formData.get("email") || ""),
                     role: String(formData.get("role") || "Team Member") as UserDirectoryEntry["role"],
-                    status: String(formData.get("status") || "Active") as UserDirectoryEntry["status"]
+                    status: String(formData.get("status") || "Active") as UserDirectoryEntry["status"],
+                    password
                   });
 
                   if (!result.ok) {
@@ -105,7 +133,7 @@ export function UserFormModal({
                 });
               }}
             >
-              {isPending ? "Saving..." : user ? "Save Changes" : "Create User"}
+              {isPending ? "Saving..." : isEditing ? "Save Changes" : "Create User"}
             </Button>
           </div>
         </form>

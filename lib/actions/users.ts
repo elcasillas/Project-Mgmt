@@ -1,6 +1,4 @@
 "use server";
-
-import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -8,6 +6,10 @@ import type { UserRole, UserStatus } from "@/lib/types/domain";
 
 function validateEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function validatePassword(password: string) {
+  return password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /\d/.test(password);
 }
 
 async function requireAdmin() {
@@ -46,6 +48,7 @@ export async function saveUserAction(input: {
   email: string;
   role: UserRole;
   status: UserStatus;
+  password?: string;
 }) {
   const auth = await requireAdmin();
   if (!auth.ok) {
@@ -55,6 +58,7 @@ export async function saveUserAction(input: {
   const firstName = input.first_name.trim();
   const lastName = input.last_name.trim();
   const email = input.email.trim().toLowerCase();
+  const password = input.password?.trim() ?? "";
 
   if (!firstName || !lastName || !email || !input.role || !input.status) {
     return { ok: false as const, message: "All fields are required." };
@@ -62,6 +66,17 @@ export async function saveUserAction(input: {
 
   if (!validateEmail(email)) {
     return { ok: false as const, message: "Enter a valid email address." };
+  }
+
+  if (!input.id && !password) {
+    return { ok: false as const, message: "Password is required for new users." };
+  }
+
+  if (password && !validatePassword(password)) {
+    return {
+      ok: false as const,
+      message: "Password must be at least 8 characters and include uppercase, lowercase, and a number."
+    };
   }
 
   const adminClient = createAdminClient();
@@ -109,6 +124,7 @@ export async function saveUserAction(input: {
 
     const { error: authError } = await adminClient.auth.admin.updateUserById(input.id, {
       email,
+      ...(password ? { password } : {}),
       user_metadata: {
         first_name: firstName,
         last_name: lastName,
@@ -127,10 +143,9 @@ export async function saveUserAction(input: {
   }
 
   const fullName = `${firstName} ${lastName}`.trim();
-  const tempPassword = `${randomUUID()}Aa1!`;
   const { data: createdUser, error: createError } = await adminClient.auth.admin.createUser({
     email,
-    password: tempPassword,
+    password,
     email_confirm: true,
     user_metadata: {
       first_name: firstName,

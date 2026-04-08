@@ -2,7 +2,7 @@
 
 ## Overview
 
-An internal CRM web application for a software company's sales and service teams. Built as a Next.js 15 App Router application with TypeScript, deployed on Vercel. The frontend uses React server components for data-fetching pages and client components for interactive UIs. Supabase provides the Postgres database, row-level security enforcement, and email/password authentication. Business logic (deal health scoring, ACV/TCV calculations, deal inspection) runs in both PostgreSQL functions and TypeScript utilities. AI-generated deal summaries and 15-point deal inspection reports are produced via the OpenRouter API using Anthropic's Claude model. A Financial Worksheet provides a live multi-currency recurring revenue model using the exchangerate.host API. An Account Health Index (AHI) module tracks partner/account health scores and snapshots. There is no separate backend server — all server-side logic runs in Next.js route handlers and server components on Vercel's serverless infrastructure.
+
 
 ---
 

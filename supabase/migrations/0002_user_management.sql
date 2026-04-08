@@ -14,6 +14,9 @@ update public.profiles
 set last_name = ''
 where last_name is null;
 
+alter table public.profiles drop constraint if exists profiles_role_check;
+alter table public.profiles drop constraint if exists profiles_status_check;
+
 update public.profiles
 set role = case
   when role = 'Manager' then 'Project Manager'
@@ -21,12 +24,10 @@ set role = case
   else role
 end;
 
-alter table public.profiles drop constraint if exists profiles_role_check;
 alter table public.profiles
   add constraint profiles_role_check
   check (role in ('Admin', 'Project Manager', 'Team Member', 'Viewer'));
 
-alter table public.profiles drop constraint if exists profiles_status_check;
 alter table public.profiles
   add constraint profiles_status_check
   check (status in ('Active', 'Inactive', 'Pending'));

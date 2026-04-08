@@ -1,5 +1,6 @@
 "use client";
 
+import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
@@ -124,7 +125,7 @@ export function ProjectFormModal({
                     return;
                   }
                   setOpen(false);
-                  router.push(`/projects?success=${encodeURIComponent(result.message)}`);
+                  router.push(`/projects?success=${encodeURIComponent(result.message)}` as Route);
                   router.refresh();
                 });
               }}

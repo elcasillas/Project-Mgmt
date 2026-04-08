@@ -1,5 +1,6 @@
 "use client";
 
+import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
@@ -158,7 +159,7 @@ export function TaskFormModal({
                   }
                   setOpen(false);
                   if (redirectPath) {
-                    router.push(`${redirectPath}?success=${encodeURIComponent(result.message)}`);
+                    router.push(`${redirectPath}?success=${encodeURIComponent(result.message)}` as Route);
                   }
                   router.refresh();
                 });

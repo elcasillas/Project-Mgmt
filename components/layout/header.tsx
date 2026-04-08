@@ -60,9 +60,14 @@ export function Header({
             .slice(0, 2) ?? "PM"}
         </div>
         <form action={logoutAction} className="hidden sm:block">
-          <Button variant="ghost" size="sm">
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-11 w-11 border border-white/10 bg-white/6 px-0 text-white hover:bg-white/10 hover:text-white"
+            aria-label="Logout"
+            title="Logout"
+          >
+            <LogOut className="h-4 w-4" />
           </Button>
         </form>
       </div>
@@ -92,9 +97,13 @@ export function Header({
             </Button>
           </div>
           <form action={logoutAction}>
-            <Button variant="ghost" className="w-full text-white/72 hover:bg-white/8 hover:text-white">
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
+            <Button
+              variant="ghost"
+              className="h-11 w-11 border border-white/10 bg-white/6 px-0 text-white hover:bg-white/10 hover:text-white"
+              aria-label="Logout"
+              title="Logout"
+            >
+              <LogOut className="h-4 w-4" />
             </Button>
           </form>
         </div>

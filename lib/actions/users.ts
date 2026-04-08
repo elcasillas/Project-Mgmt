@@ -1,6 +1,8 @@
 "use server";
 import { revalidatePath } from "next/cache";
+import type { User } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { buildProfilePayload } from "@/lib/supabase/profiles";
 import { createClient } from "@/lib/supabase/server";
 import type { UserRole, UserStatus } from "@/lib/types/domain";
 
@@ -39,6 +41,59 @@ async function getActiveAdminCount(adminClient: ReturnType<typeof createAdminCli
     .is("deleted_at", null);
 
   return count ?? 0;
+}
+
+async function upsertManagedProfile(
+  adminClient: ReturnType<typeof createAdminClient>,
+  user: Pick<User, "id" | "email" | "user_metadata">,
+  input: { firstName: string; lastName: string; role: UserRole; status: UserStatus; last_active_at: string | null }
+) {
+  const base = buildProfilePayload(user as User);
+  const fullName = `${input.firstName} ${input.lastName}`.trim();
+
+  const { error } = await adminClient.from("profiles").upsert(
+    {
+      ...base,
+      first_name: input.firstName,
+      last_name: input.lastName,
+      full_name: fullName,
+      email: user.email ?? "",
+      role: input.role,
+      status: input.status,
+      last_active_at: input.last_active_at,
+      deleted_at: null
+    },
+    { onConflict: "id" }
+  );
+
+  if (error) {
+    throw error;
+  }
+}
+
+async function findAuthUserByEmail(adminClient: ReturnType<typeof createAdminClient>, email: string) {
+  let page = 1;
+
+  while (page <= 10) {
+    const { data, error } = await adminClient.auth.admin.listUsers({ page, perPage: 200 });
+
+    if (error) {
+      throw error;
+    }
+
+    const matchedUser = data.users.find((user) => user.email?.toLowerCase() === email.toLowerCase());
+    if (matchedUser) {
+      return matchedUser;
+    }
+
+    if (data.users.length < 200) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  return null;
 }
 
 export async function saveUserAction(input: {
@@ -105,23 +160,6 @@ export async function saveUserAction(input: {
     }
 
     const fullName = `${firstName} ${lastName}`.trim();
-    const { error: profileError } = await adminClient
-      .from("profiles")
-      .update({
-        first_name: firstName,
-        last_name: lastName,
-        full_name: fullName,
-        email,
-        role: input.role,
-        status: input.status,
-        deleted_at: null
-      })
-      .eq("id", input.id);
-
-    if (profileError) {
-      return { ok: false as const, message: profileError.message };
-    }
-
     const { error: authError } = await adminClient.auth.admin.updateUserById(input.id, {
       email,
       ...(password ? { password } : {}),
@@ -136,6 +174,32 @@ export async function saveUserAction(input: {
 
     if (authError) {
       return { ok: false as const, message: authError.message };
+    }
+
+    try {
+      await upsertManagedProfile(
+        adminClient,
+        {
+          id: input.id,
+          email,
+          user_metadata: {
+            first_name: firstName,
+            last_name: lastName,
+            full_name: fullName,
+            role: input.role,
+            status: input.status
+          }
+        },
+        {
+          firstName,
+          lastName,
+          role: input.role,
+          status: input.status,
+          last_active_at: null
+        }
+      );
+    } catch (profileError) {
+      return { ok: false as const, message: profileError instanceof Error ? profileError.message : "Unable to update profile." };
     }
 
     revalidatePath("/users");
@@ -156,25 +220,62 @@ export async function saveUserAction(input: {
     }
   });
 
-  if (createError || !createdUser.user) {
+  const createdAuthUser = createdUser.user;
+
+  if (createError || !createdAuthUser) {
+    if (createError?.message?.toLowerCase().includes("already been registered")) {
+      try {
+        const existingAuthUser = await findAuthUserByEmail(adminClient, email);
+
+        if (existingAuthUser) {
+          const { error: authUpdateError } = await adminClient.auth.admin.updateUserById(existingAuthUser.id, {
+            email,
+            ...(password ? { password } : {}),
+            user_metadata: {
+              first_name: firstName,
+              last_name: lastName,
+              full_name: fullName,
+              role: input.role,
+              status: input.status
+            }
+          });
+
+          if (authUpdateError) {
+            return { ok: false as const, message: authUpdateError.message };
+          }
+
+          await upsertManagedProfile(adminClient, existingAuthUser, {
+            firstName,
+            lastName,
+            role: input.role,
+            status: input.status,
+            last_active_at: null
+          });
+
+          revalidatePath("/users");
+          return { ok: true as const, message: "Existing auth user recovered and added to the directory." };
+        }
+      } catch (recoveryError) {
+        return {
+          ok: false as const,
+          message: recoveryError instanceof Error ? recoveryError.message : "Unable to recover existing user."
+        };
+      }
+    }
+
     return { ok: false as const, message: createError?.message || "Unable to create user." };
   }
 
-  const { error: profileError } = await adminClient
-    .from("profiles")
-    .update({
-      first_name: firstName,
-      last_name: lastName,
-      full_name: fullName,
+  try {
+    await upsertManagedProfile(adminClient, createdAuthUser, {
+      firstName,
+      lastName,
       role: input.role,
       status: input.status,
-      last_active_at: null,
-      deleted_at: null
-    })
-    .eq("id", createdUser.user.id);
-
-  if (profileError) {
-    return { ok: false as const, message: profileError.message };
+      last_active_at: null
+    });
+  } catch (profileError) {
+    return { ok: false as const, message: profileError instanceof Error ? profileError.message : "Unable to create profile." };
   }
 
   revalidatePath("/users");

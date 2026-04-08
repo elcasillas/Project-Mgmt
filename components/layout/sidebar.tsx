@@ -23,7 +23,7 @@ export function Sidebar() {
   return (
     <aside className="fixed inset-y-0 left-0 hidden w-[272px] shrink-0 flex-col border-r border-[rgba(255,255,255,0.08)] bg-[#000000] px-7 py-8 text-white lg:flex">
       <div className="mb-12 flex justify-center">
-        <Image src={logo} alt="Casibros" className="h-auto w-[112px]" priority />
+        <Image src={logo} alt="Casibros" className="h-auto w-[192px]" priority />
       </div>
 
       <nav className="space-y-1.5">

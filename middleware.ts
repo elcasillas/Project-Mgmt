@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
 const PUBLIC_PATHS = ["/login", "/signup", "/forgot-password"];
@@ -12,13 +12,13 @@ export async function middleware(request: NextRequest) {
   if (!user && !isPublic && !isAuthCallback) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    return Response.redirect(url);
+    return NextResponse.redirect(url);
   }
 
   if (user && isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
-    return Response.redirect(url);
+    return NextResponse.redirect(url);
   }
 
   return response;

@@ -37,14 +37,14 @@ const config: Config = {
         }
       },
       boxShadow: {
-        card: "0 10px 30px rgba(15, 23, 42, 0.08)",
-        soft: "0 18px 40px rgba(15, 23, 42, 0.12)"
+        card: "0 3px 5px 30px rgba(0, 0, 0, 0.12)",
+        soft: "0 20px 48px rgba(0, 0, 0, 0.18)"
       },
       borderRadius: {
         "4xl": "2rem"
       },
       fontFamily: {
-        sans: ["var(--font-geist-sans)", "sans-serif"]
+        sans: ["var(--app-font)"]
       }
     }
   },

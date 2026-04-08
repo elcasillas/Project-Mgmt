@@ -6,7 +6,7 @@ export function Select({ className, children, ...props }: SelectProps) {
   return (
     <select
       className={cn(
-        "h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100",
+        "h-11 w-full rounded-[11px] border border-[rgba(29,29,31,0.08)] bg-[#fafafc] px-4 text-[17px] tracking-[-0.01em] text-[#1d1d1f] outline-none transition focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20",
         className
       )}
       {...props}

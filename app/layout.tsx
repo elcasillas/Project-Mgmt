@@ -1,12 +1,6 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "@/app/globals.css";
 import { APP_NAME } from "@/lib/data/constants";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-geist-sans"
-});
 
 export const metadata: Metadata = {
   title: `${APP_NAME} | Project Management`,
@@ -16,7 +10,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={inter.variable}>{children}</body>
+      <body>{children}</body>
     </html>
   );
 }

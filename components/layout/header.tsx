@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { Route } from "next";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { LogOut, Menu, Plus, Search } from "lucide-react";
@@ -22,36 +23,36 @@ export function Header({
   const router = useRouter();
 
   return (
-    <header className="sticky top-0 z-30 border-b border-white/70 bg-slate-100/80 backdrop-blur">
-      <div className="flex items-center gap-4 px-4 py-4 lg:px-8">
+    <header className="sticky top-0 z-30 border-b border-white/10 bg-[rgba(0,0,0,0.82)] backdrop-blur-[20px] backdrop-saturate-150">
+      <div className="flex items-center gap-4 px-4 py-3 sm:px-6 lg:px-10">
         <button
           type="button"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white lg:hidden"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/12 bg-white/6 text-white lg:hidden"
           onClick={() => setMobileOpen((value) => !value)}
         >
           <Menu className="h-5 w-5" />
         </button>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-600">{workspaceName}</p>
-          <p className="truncate text-lg font-semibold text-slate-950">Project Delivery Command Center</p>
+          <p className="text-[10px] uppercase tracking-[0.24em] text-white/45">{workspaceName}</p>
+          <p className="truncate text-[21px] font-semibold tracking-[-0.02em] text-white">Project Delivery Command Center</p>
         </div>
         <div className="hidden max-w-md flex-1 lg:block">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <Input className="pl-11" placeholder="Search projects, tasks, or descriptions" />
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
+            <Input className="border-white/10 bg-white/10 pl-11 text-white placeholder:text-white/35" placeholder="Search projects, tasks, or descriptions" />
           </div>
         </div>
         <div className="hidden items-center gap-3 sm:flex">
-          <Button variant="secondary" onClick={() => router.push("/projects")}>
+          <Button variant="secondary" onClick={() => router.push("/projects" as Route)}>
             <Plus className="mr-2 h-4 w-4" />
             New Project
           </Button>
-          <Button onClick={() => router.push("/tasks")}>
+          <Button onClick={() => router.push("/tasks" as Route)}>
             <Plus className="mr-2 h-4 w-4" />
             New Task
           </Button>
         </div>
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">
+        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/10 text-sm font-semibold text-white">
           {profile?.full_name
             ?.split(" ")
             .map((part) => part[0])
@@ -66,14 +67,14 @@ export function Header({
         </form>
       </div>
       {mobileOpen ? (
-        <div className="space-y-3 border-t border-white/70 bg-white px-4 py-4 lg:hidden">
+        <div className="space-y-3 border-t border-white/10 bg-black px-4 py-4 lg:hidden">
           <nav className="grid gap-2">
             {NAV_ITEMS.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`rounded-2xl px-4 py-3 text-sm font-medium ${
-                  pathname.startsWith(item.href) ? "bg-sky-50 text-sky-700" : "bg-slate-50 text-slate-700"
+                className={`rounded-full px-4 py-3 text-sm font-medium ${
+                  pathname.startsWith(item.href) ? "bg-white text-[#1d1d1f]" : "bg-white/6 text-white/72"
                 }`}
                 onClick={() => setMobileOpen(false)}
               >
@@ -81,17 +82,17 @@ export function Header({
               </Link>
             ))}
           </nav>
-          <Input placeholder="Search projects, tasks, or descriptions" />
+          <Input className="border-white/10 bg-white/10 text-white placeholder:text-white/35" placeholder="Search projects, tasks, or descriptions" />
           <div className="flex gap-3">
-            <Button variant="secondary" className="flex-1" onClick={() => router.push("/projects")}>
+            <Button variant="secondary" className="flex-1" onClick={() => router.push("/projects" as Route)}>
               New Project
             </Button>
-            <Button className="flex-1" onClick={() => router.push("/tasks")}>
+            <Button className="flex-1" onClick={() => router.push("/tasks" as Route)}>
               New Task
             </Button>
           </div>
           <form action={logoutAction}>
-            <Button variant="ghost" className="w-full">
+            <Button variant="ghost" className="w-full text-white/72 hover:bg-white/8 hover:text-white">
               <LogOut className="mr-2 h-4 w-4" />
               Logout
             </Button>

@@ -19,18 +19,18 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-72 shrink-0 flex-col border-r border-white/70 bg-slate-950 px-6 py-8 text-white lg:flex">
-      <div className="mb-10 flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-teal-500 text-lg font-bold">
-          N
+    <aside className="fixed inset-y-0 left-0 hidden w-[272px] shrink-0 flex-col border-r border-[rgba(255,255,255,0.08)] bg-[#000000] px-7 py-8 text-white lg:flex">
+      <div className="mb-12 flex items-center gap-4">
+        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/18 bg-[rgba(255,255,255,0.06)] text-sm font-semibold">
+          PM
         </div>
         <div>
-          <p className="text-lg font-semibold">{APP_NAME}</p>
-          <p className="text-sm text-slate-400">Execution workspace</p>
+          <p className="text-[21px] font-semibold tracking-[-0.02em] text-white">{APP_NAME}</p>
+          <p className="text-[12px] uppercase tracking-[0.16em] text-white/45">Delivery system</p>
         </div>
       </div>
 
-      <nav className="space-y-2">
+      <nav className="space-y-1.5">
         {NAV_ITEMS.map((item) => {
           const Icon = icons[item.label as keyof typeof icons];
           const active = pathname.startsWith(item.href);
@@ -40,8 +40,8 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition",
-                active ? "bg-white text-slate-950 shadow-lg" : "text-slate-300 hover:bg-slate-900 hover:text-white"
+                "flex items-center gap-3 rounded-full px-4 py-3 text-[14px] tracking-[-0.01em] transition",
+                active ? "bg-white text-[#1d1d1f]" : "text-white/70 hover:bg-white/8 hover:text-white"
               )}
             >
               <Icon className="h-4 w-4" />
@@ -51,12 +51,14 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="mt-auto rounded-3xl bg-white/10 p-5">
-        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-teal-400/15 text-teal-200">
+      <div className="mt-auto rounded-[8px] bg-[#1d1d1f] p-5">
+        <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/8 text-[#2997ff]">
           <Bell className="h-5 w-5" />
         </div>
-        <p className="text-sm font-semibold">Operational pulse</p>
-        <p className="mt-1 text-sm text-slate-300">Live project and task updates flow in through Supabase Realtime subscriptions.</p>
+        <p className="text-[17px] font-semibold tracking-[-0.02em] text-white">Operational pulse</p>
+        <p className="mt-2 text-[14px] leading-[1.43] tracking-[-0.01em] text-white/62">
+          Live project and task updates stream through the workspace in real time.
+        </p>
       </div>
     </aside>
   );

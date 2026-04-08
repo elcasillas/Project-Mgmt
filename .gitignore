@@ -3,3 +3,9 @@ node_modules
 .env.local
 dist
 *.log
+*.tsbuildinfo
+build.stdout
+build.stderr
+.codex
+error.png
+house_flip_project_plan_16_weeks_with_dates.xlsx

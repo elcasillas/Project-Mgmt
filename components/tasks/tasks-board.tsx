@@ -37,7 +37,7 @@ export function TasksBoard({ tasks }: { tasks: Task[] }) {
       {grouped.map((column) => (
         <Card
           key={column.status}
-          className="min-h-[380px] bg-white/75 p-4"
+          className="min-h-[380px] bg-white p-4"
           onDragOver={(event: DragEvent<HTMLDivElement>) => event.preventDefault()}
           onDrop={(event: DragEvent<HTMLDivElement>) => {
             event.preventDefault();
@@ -62,7 +62,7 @@ export function TasksBoard({ tasks }: { tasks: Task[] }) {
                 key={task.id}
                 draggable
                 onDragStart={() => setDraggingTaskId(task.id)}
-                className="cursor-grab rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:border-sky-200"
+                className="cursor-grab rounded-2xl border border-gray-200 bg-white p-4 transition hover:bg-gray-50 hover:border-gray-300"
               >
                 <div className="flex items-start justify-between gap-3">
                   <p className="font-medium text-slate-900">{task.title}</p>

@@ -190,7 +190,7 @@ export function TasksView({
                   <p className="text-sm font-semibold text-slate-900">{format(day, "MMM d")}</p>
                   <div className="mt-3 space-y-2">
                     {dayTasks.map((task) => (
-                      <div key={task.id} className="rounded-xl bg-white p-3 shadow-sm">
+                      <div key={task.id} className="rounded-xl border border-gray-200 bg-white p-3">
                         <p className="text-sm font-medium text-slate-900">{task.title}</p>
                         <p className="mt-1 text-xs text-slate-500">{task.project?.name ?? "General task"}</p>
                       </div>

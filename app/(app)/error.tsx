@@ -20,7 +20,7 @@ export default function AppError({
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center p-6">
-      <div className="max-w-lg rounded-[32px] border border-white/70 bg-white/95 p-10 shadow-soft">
+      <div className="max-w-lg rounded-2xl border border-gray-200 bg-white p-10">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-rose-600">Workspace Error</p>
         <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950">A server-side error occurred while loading this workspace view.</h1>
         {error.digest ? <p className="mt-3 text-sm text-slate-600">Digest: {error.digest}</p> : null}

@@ -32,7 +32,7 @@ export function AuthShell({
         </div>
       </div>
       <div className="flex flex-1 items-center justify-center p-6 lg:p-10">
-        <div className="w-full max-w-md rounded-[32px] border border-white/10 bg-white/95 p-8 text-slate-900 shadow-soft">
+        <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 text-slate-900">
           <div className="mb-8">
             <Link href="/" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-600">
               {APP_NAME}

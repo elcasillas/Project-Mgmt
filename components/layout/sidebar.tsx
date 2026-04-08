@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, FolderKanban, LayoutGrid, ListTodo, Settings, ShieldUser, Users } from "lucide-react";
 import logo from "@/casibros-white.png";
-import { APP_NAME, NAV_ITEMS } from "@/lib/data/constants";
+import { NAV_ITEMS } from "@/lib/data/constants";
 import { cn } from "@/lib/utils/cn";
 
 const icons = {
@@ -22,12 +22,8 @@ export function Sidebar() {
 
   return (
     <aside className="fixed inset-y-0 left-0 hidden w-[272px] shrink-0 flex-col border-r border-[rgba(255,255,255,0.08)] bg-[#000000] px-7 py-8 text-white lg:flex">
-      <div className="mb-12 flex items-center gap-4">
+      <div className="mb-12">
         <Image src={logo} alt="Casibros" className="h-auto w-[140px]" priority />
-        <div>
-          <p className="text-[21px] font-semibold tracking-[-0.02em] text-white">{APP_NAME}</p>
-          <p className="text-[12px] uppercase tracking-[0.16em] text-white/45">Delivery system</p>
-        </div>
       </div>
 
       <nav className="space-y-1.5">

@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import "@/app/globals.css";
-import { APP_NAME } from "@/lib/data/constants";
 
 export const metadata: Metadata = {
-  title: `${APP_NAME} | Project Management`,
+  title: "Casi Bros | Project Center",
   description: "Production-ready project management workspace built with Next.js and Supabase."
 };
 

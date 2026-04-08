@@ -1,4 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
+import logo from "@/casibros-white.png";
 import { APP_NAME } from "@/lib/data/constants";
 
 export function AuthShell({
@@ -14,7 +16,7 @@ export function AuthShell({
     <div className="flex min-h-screen bg-slate-950 text-white">
       <div className="hidden flex-1 flex-col justify-between bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.35),_transparent_35%),linear-gradient(180deg,_#020617_0%,_#0f172a_100%)] p-12 lg:flex">
         <div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-xl font-semibold">{APP_NAME.slice(0, 1)}</div>
+          <Image src={logo} alt="Casibros" className="h-auto w-[180px]" priority />
           <h1 className="mt-8 max-w-md text-5xl font-semibold tracking-tight">Project execution with the clarity of an executive operating rhythm.</h1>
           <p className="mt-4 max-w-lg text-base text-slate-300">
             Plan, prioritize, and deliver work with live status tracking, collaboration, and portfolio-level visibility.

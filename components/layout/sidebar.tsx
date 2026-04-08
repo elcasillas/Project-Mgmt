@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, FolderKanban, LayoutGrid, ListTodo, Settings, Users } from "lucide-react";
+import { Bell, FolderKanban, LayoutGrid, ListTodo, Settings, ShieldUser, Users } from "lucide-react";
 import { APP_NAME, NAV_ITEMS } from "@/lib/data/constants";
 import { cn } from "@/lib/utils/cn";
 
@@ -10,6 +10,7 @@ const icons = {
   Dashboard: LayoutGrid,
   Projects: FolderKanban,
   Tasks: ListTodo,
+  Users: ShieldUser,
   Team: Users,
   Settings: Settings
 };

@@ -8,10 +8,20 @@ export async function loginAction(formData: FormData) {
   const email = String(formData.get("email") || "");
   const password = String(formData.get("password") || "");
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const {
+    data: { user },
+    error
+  } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
     redirect(`/login?error=${encodeURIComponent(error.message)}`);
+  }
+
+  if (user) {
+    await supabase
+      .from("profiles")
+      .update({ last_active_at: new Date().toISOString() })
+      .eq("id", user.id);
   }
 
   redirect("/dashboard");
@@ -29,7 +39,10 @@ export async function signupAction(formData: FormData) {
     options: {
       data: {
         full_name: fullName,
-        role: "Member"
+        first_name: fullName.split(" ")[0] ?? fullName,
+        last_name: fullName.split(" ").slice(1).join(" "),
+        role: "Team Member",
+        status: "Active"
       }
     }
   });

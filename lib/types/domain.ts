@@ -1,4 +1,5 @@
-export type UserRole = "Admin" | "Manager" | "Member";
+export type UserRole = "Admin" | "Project Manager" | "Team Member" | "Viewer";
+export type UserStatus = "Active" | "Inactive" | "Pending";
 export type ProjectStatus = "Planning" | "Active" | "On Hold" | "Completed" | "Cancelled";
 export type ProjectPriority = "Low" | "Medium" | "High" | "Critical";
 export type TaskStatus = "Not Started" | "In Progress" | "Blocked" | "In Review" | "Done";
@@ -6,12 +7,17 @@ export type TaskPriority = "Low" | "Medium" | "High" | "Urgent";
 
 export type Profile = {
   id: string;
+  first_name: string;
+  last_name: string;
   full_name: string;
   email: string;
   role: UserRole;
+  status: UserStatus;
   avatar_url: string | null;
   created_at: string;
   updated_at: string;
+  last_active_at: string | null;
+  deleted_at: string | null;
 };
 
 export type Tag = {
@@ -106,4 +112,9 @@ export type DashboardMetrics = {
   recentTasks: Task[];
   recentActivity: ActivityLog[];
   spotlightProjects: Project[];
+};
+
+export type UserDirectoryEntry = Profile & {
+  assignedProjects: number;
+  assignedTasks: number;
 };

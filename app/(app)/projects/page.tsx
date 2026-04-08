@@ -12,7 +12,7 @@ export default async function ProjectsPage({
   const params = await searchParams;
   const [projects, teamMembers, currentProfile] = await Promise.all([getProjects(), getTeamMembers(), getCurrentProfile()]);
   const profiles = teamMembers.map(({ activeProjects, assignedTasks, workloadSummary, ...profile }) => profile);
-  const canManageProjects = currentProfile?.role === "Admin" || currentProfile?.role === "Manager";
+  const canManageProjects = currentProfile?.role === "Admin" || currentProfile?.role === "Project Manager";
 
   return (
     <div className="space-y-8">

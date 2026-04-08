@@ -4,10 +4,18 @@ export function canManageWorkspace(role?: UserRole | null) {
   return role === "Admin";
 }
 
+export function canManageUsers(role?: UserRole | null) {
+  return role === "Admin";
+}
+
+export function canViewUsers(role?: UserRole | null) {
+  return role === "Admin" || role === "Project Manager" || role === "Team Member" || role === "Viewer";
+}
+
 export function canManageProjects(role?: UserRole | null) {
-  return role === "Admin" || role === "Manager";
+  return role === "Admin" || role === "Project Manager";
 }
 
 export function canManageTasks(role?: UserRole | null) {
-  return role === "Admin" || role === "Manager" || role === "Member";
+  return role === "Admin" || role === "Project Manager" || role === "Team Member";
 }

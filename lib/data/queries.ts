@@ -7,7 +7,8 @@ import type {
   DashboardMetrics,
   Profile,
   Project,
-  Task
+  Task,
+  UserDirectoryEntry
 } from "@/lib/types/domain";
 
 function serializeError(error: unknown) {
@@ -36,12 +37,17 @@ function logQueryError(scope: string, error: unknown, metadata?: Record<string, 
 function mapProfile(row: any): Profile {
   return {
     id: row.id,
+    first_name: row.first_name ?? "",
+    last_name: row.last_name ?? "",
     full_name: row.full_name,
     email: row.email,
     role: row.role,
+    status: row.status ?? "Active",
     avatar_url: row.avatar_url,
     created_at: row.created_at,
-    updated_at: row.updated_at
+    updated_at: row.updated_at,
+    last_active_at: row.last_active_at ?? null,
+    deleted_at: row.deleted_at ?? null
   };
 }
 
@@ -402,7 +408,7 @@ export async function getTeamMembers() {
   try {
     const supabase = await createClient();
     const [profilesResult, projectsResult, tasksResult] = await Promise.all([
-      supabase.from("profiles").select("*").order("full_name"),
+      supabase.from("profiles").select("*").is("deleted_at", null).order("full_name"),
       supabase.from("project_members").select("user_id, project_id"),
       supabase.from("tasks").select("assignee_id, status")
     ]);
@@ -419,6 +425,36 @@ export async function getTeamMembers() {
     }));
   } catch (error) {
     logQueryError("getTeamMembers", error);
+    throw error;
+  }
+}
+
+export async function getUsersDirectory() {
+  try {
+    const supabase = await createClient();
+    const [profilesResult, membershipsResult, tasksResult] = await Promise.all([
+      supabase.from("profiles").select("*").is("deleted_at", null).order("created_at", { ascending: false }),
+      supabase.from("project_members").select("user_id"),
+      supabase.from("tasks").select("assignee_id")
+    ]);
+
+    if (profilesResult.error) {
+      throw profilesResult.error;
+    }
+
+    const membershipRows = membershipsResult.data ?? [];
+    const taskRows = tasksResult.data ?? [];
+
+    return ((profilesResult.data ?? []).map((row: any) => {
+      const profile = mapProfile(row);
+      return {
+        ...profile,
+        assignedProjects: membershipRows.filter((entry) => entry.user_id === profile.id).length,
+        assignedTasks: taskRows.filter((task) => task.assignee_id === profile.id).length
+      };
+    })) as UserDirectoryEntry[];
+  } catch (error) {
+    logQueryError("getUsersDirectory", error);
     throw error;
   }
 }

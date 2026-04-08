@@ -27,12 +27,12 @@ async function requireViewer() {
 async function getCurrentUserRole() {
   const { supabase, user } = await requireViewer();
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  return { supabase, user, role: profile?.role ?? "Member" };
+  return { supabase, user, role: profile?.role ?? "Team Member" };
 }
 
 export async function saveProjectAction(formData: FormData) {
   const { supabase, user, role } = await getCurrentUserRole();
-  if (role !== "Admin" && role !== "Manager") {
+  if (role !== "Admin" && role !== "Project Manager") {
     return {
       ok: false,
       message: "Only Admins and Managers can create or edit projects."
@@ -113,7 +113,7 @@ export async function saveProjectAction(formData: FormData) {
 
 export async function archiveProjectAction(formData: FormData) {
   const { supabase, user, role } = await getCurrentUserRole();
-  if (role !== "Admin" && role !== "Manager") {
+  if (role !== "Admin" && role !== "Project Manager") {
     redirect("/projects?error=Only+Admins+and+Managers+can+archive+projects.");
   }
 

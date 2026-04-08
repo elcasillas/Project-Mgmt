@@ -16,20 +16,26 @@ insert into auth.users (
   recovery_token
 )
 values
-  ('11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'admin@northstarpm.com', crypt('Password123!', gen_salt('bf')), timezone('utc', now()), '{"provider":"email","providers":["email"]}', '{"full_name":"Avery Stone","role":"Admin"}', timezone('utc', now()), timezone('utc', now()), '', '', '', ''),
-  ('22222222-2222-2222-2222-222222222222', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'manager@northstarpm.com', crypt('Password123!', gen_salt('bf')), timezone('utc', now()), '{"provider":"email","providers":["email"]}', '{"full_name":"Jordan Lee","role":"Manager"}', timezone('utc', now()), timezone('utc', now()), '', '', '', ''),
-  ('33333333-3333-3333-3333-333333333333', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'member@northstarpm.com', crypt('Password123!', gen_salt('bf')), timezone('utc', now()), '{"provider":"email","providers":["email"]}', '{"full_name":"Taylor Brooks","role":"Member"}', timezone('utc', now()), timezone('utc', now()), '', '', '', '')
+  ('11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'admin@northstarpm.com', crypt('Password123!', gen_salt('bf')), timezone('utc', now()), '{"provider":"email","providers":["email"]}', '{"full_name":"Avery Stone","first_name":"Avery","last_name":"Stone","role":"Admin","status":"Active"}', timezone('utc', now()), timezone('utc', now()), '', '', '', ''),
+  ('22222222-2222-2222-2222-222222222222', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'manager@northstarpm.com', crypt('Password123!', gen_salt('bf')), timezone('utc', now()), '{"provider":"email","providers":["email"]}', '{"full_name":"Jordan Lee","first_name":"Jordan","last_name":"Lee","role":"Project Manager","status":"Active"}', timezone('utc', now()), timezone('utc', now()), '', '', '', ''),
+  ('33333333-3333-3333-3333-333333333333', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'member@northstarpm.com', crypt('Password123!', gen_salt('bf')), timezone('utc', now()), '{"provider":"email","providers":["email"]}', '{"full_name":"Taylor Brooks","first_name":"Taylor","last_name":"Brooks","role":"Team Member","status":"Active"}', timezone('utc', now()), timezone('utc', now()), '', '', '', ''),
+  ('44444444-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'viewer@northstarpm.com', crypt('Password123!', gen_salt('bf')), timezone('utc', now()), '{"provider":"email","providers":["email"]}', '{"full_name":"Morgan Hale","first_name":"Morgan","last_name":"Hale","role":"Viewer","status":"Pending"}', timezone('utc', now()), timezone('utc', now()), '', '', '', '')
 on conflict (id) do nothing;
 
-insert into public.profiles (id, full_name, email, role, avatar_url)
+insert into public.profiles (id, first_name, last_name, full_name, email, role, status, avatar_url, last_active_at)
 values
-  ('11111111-1111-1111-1111-111111111111', 'Avery Stone', 'admin@northstarpm.com', 'Admin', null),
-  ('22222222-2222-2222-2222-222222222222', 'Jordan Lee', 'manager@northstarpm.com', 'Manager', null),
-  ('33333333-3333-3333-3333-333333333333', 'Taylor Brooks', 'member@northstarpm.com', 'Member', null)
+  ('11111111-1111-1111-1111-111111111111', 'Avery', 'Stone', 'Avery Stone', 'admin@northstarpm.com', 'Admin', 'Active', null, timezone('utc', now()) - interval '1 hour'),
+  ('22222222-2222-2222-2222-222222222222', 'Jordan', 'Lee', 'Jordan Lee', 'manager@northstarpm.com', 'Project Manager', 'Active', null, timezone('utc', now()) - interval '3 hours'),
+  ('33333333-3333-3333-3333-333333333333', 'Taylor', 'Brooks', 'Taylor Brooks', 'member@northstarpm.com', 'Team Member', 'Active', null, timezone('utc', now()) - interval '1 day'),
+  ('44444444-1111-1111-1111-111111111111', 'Morgan', 'Hale', 'Morgan Hale', 'viewer@northstarpm.com', 'Viewer', 'Pending', null, null)
 on conflict (id) do update
+set first_name = excluded.first_name,
+    last_name = excluded.last_name,
 set full_name = excluded.full_name,
     email = excluded.email,
-    role = excluded.role;
+    role = excluded.role,
+    status = excluded.status,
+    last_active_at = excluded.last_active_at;
 
 insert into public.tags (id, name, color)
 values

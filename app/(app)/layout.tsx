@@ -15,5 +15,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const [profile, settings] = await Promise.all([getCurrentProfile(), getWorkspaceSettings()]);
 
+  if (!profile || profile.deleted_at || profile.status === "Inactive") {
+    redirect("/login?error=Your account no longer has access to the workspace.");
+  }
+
   return <AppShell profile={profile} workspaceName={settings?.workspace_name ?? "Northstar PM"}>{children}</AppShell>;
 }

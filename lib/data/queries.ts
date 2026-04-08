@@ -10,6 +10,29 @@ import type {
   Task
 } from "@/lib/types/domain";
 
+function serializeError(error: unknown) {
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    };
+  }
+
+  if (typeof error === "object" && error !== null) {
+    return error;
+  }
+
+  return { message: String(error) };
+}
+
+function logQueryError(scope: string, error: unknown, metadata?: Record<string, unknown>) {
+  console.error(`[queries] ${scope} failed`, {
+    ...metadata,
+    error: serializeError(error)
+  });
+}
+
 function mapProfile(row: any): Profile {
   return {
     id: row.id,
@@ -117,55 +140,46 @@ function mapActivity(row: any): ActivityLog {
 }
 
 export async function getCurrentProfile() {
-  const supabase = await createClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
 
-  if (!user) {
-    return null;
+    if (!user) {
+      return null;
+    }
+
+    const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+    if (error) {
+      throw error;
+    }
+
+    return data ? mapProfile(data) : null;
+  } catch (error) {
+    logQueryError("getCurrentProfile", error);
+    throw error;
   }
-
-  const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-  return data ? mapProfile(data) : null;
 }
 
 export async function getWorkspaceSettings() {
-  const supabase = await createClient();
-  const { data } = await supabase.from("workspace_settings").select("*").single();
-  return data;
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.from("workspace_settings").select("*").single();
+    if (error) {
+      throw error;
+    }
+    return data;
+  } catch (error) {
+    logQueryError("getWorkspaceSettings", error);
+    throw error;
+  }
 }
 
 export async function getProjects() {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("projects")
-    .select(
-      `
-        *,
-        owner:profiles!projects_owner_id_fkey(*),
-        project_members(
-          profiles(*)
-        ),
-        project_tags(
-          tags(*)
-        )
-      `
-    )
-    .eq("archived", false)
-    .order("updated_at", { ascending: false });
-
-  if (error) {
-    throw error;
-  }
-
-  return (data ?? []).map(mapProject);
-}
-
-export async function getProjectDetail(projectId: string) {
-  const supabase = await createClient();
-  const [projectResult, tasksResult, activityResult, commentsResult, attachmentsResult] = await Promise.all([
-    supabase
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
       .from("projects")
       .select(
         `
@@ -179,9 +193,103 @@ export async function getProjectDetail(projectId: string) {
           )
         `
       )
-      .eq("id", projectId)
-      .single(),
-    supabase
+      .eq("archived", false)
+      .order("updated_at", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return (data ?? []).map(mapProject);
+  } catch (error) {
+    logQueryError("getProjects", error);
+    throw error;
+  }
+}
+
+export async function getProjectDetail(projectId: string) {
+  try {
+    const supabase = await createClient();
+    const [projectResult, tasksResult, activityResult, commentsResult, attachmentsResult] = await Promise.all([
+      supabase
+        .from("projects")
+        .select(
+          `
+            *,
+            owner:profiles!projects_owner_id_fkey(*),
+            project_members(
+              profiles(*)
+            ),
+            project_tags(
+              tags(*)
+            )
+          `
+        )
+        .eq("id", projectId)
+        .single(),
+      supabase
+        .from("tasks")
+        .select(
+          `
+            *,
+            assignee:profiles!tasks_assignee_id_fkey(*),
+            reporter:profiles!tasks_reporter_id_fkey(*),
+            projects(id, name, status, priority, progress),
+            task_tags(tags(*)),
+            task_dependencies!task_dependencies_task_id_fkey(depends_on_task_id)
+          `
+        )
+        .eq("project_id", projectId)
+        .order("updated_at", { ascending: false }),
+      supabase
+        .from("activity_logs")
+        .select("*, actor:profiles!activity_logs_user_id_fkey(*)")
+        .eq("entity_id", projectId)
+        .order("created_at", { ascending: false })
+        .limit(20),
+      supabase
+        .from("comments")
+        .select("*, author:profiles!comments_user_id_fkey(*)")
+        .in(
+          "task_id",
+          (await supabase.from("tasks").select("id").eq("project_id", projectId)).data?.map((task) => task.id) ?? ["00000000-0000-0000-0000-000000000000"]
+        )
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("attachments")
+        .select("*, uploader:profiles!attachments_uploaded_by_fkey(*)")
+        .eq("project_id", projectId)
+        .order("created_at", { ascending: false })
+    ]);
+
+    if (projectResult.error) {
+      throw projectResult.error;
+    }
+
+    return {
+      project: mapProject(projectResult.data),
+      tasks: (tasksResult.data ?? []).map(mapTask),
+      activity: (activityResult.data ?? []).map(mapActivity),
+      comments: (commentsResult.data ?? []).map((row: any) => ({
+        id: row.id,
+        task_id: row.task_id,
+        user_id: row.user_id,
+        body: row.body,
+        created_at: row.created_at,
+        author: row.author ? mapProfile(row.author) : undefined
+      })) as Comment[],
+      attachments: (attachmentsResult.data ?? []).map(mapAttachment)
+    };
+  } catch (error) {
+    logQueryError("getProjectDetail", error, { projectId });
+    throw error;
+  }
+}
+
+export async function getTasks() {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
       .from("tasks")
       .select(
         `
@@ -193,70 +301,17 @@ export async function getProjectDetail(projectId: string) {
           task_dependencies!task_dependencies_task_id_fkey(depends_on_task_id)
         `
       )
-      .eq("project_id", projectId)
-      .order("updated_at", { ascending: false }),
-    supabase
-      .from("activity_logs")
-      .select("*, actor:profiles!activity_logs_user_id_fkey(*)")
-      .eq("entity_id", projectId)
-      .order("created_at", { ascending: false })
-      .limit(20),
-    supabase
-      .from("comments")
-      .select("*, author:profiles!comments_user_id_fkey(*)")
-      .in(
-        "task_id",
-        (await supabase.from("tasks").select("id").eq("project_id", projectId)).data?.map((task) => task.id) ?? ["00000000-0000-0000-0000-000000000000"]
-      )
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("attachments")
-      .select("*, uploader:profiles!attachments_uploaded_by_fkey(*)")
-      .eq("project_id", projectId)
-      .order("created_at", { ascending: false })
-  ]);
+      .order("updated_at", { ascending: false });
 
-  if (projectResult.error) {
-    throw projectResult.error;
-  }
+    if (error) {
+      throw error;
+    }
 
-  return {
-    project: mapProject(projectResult.data),
-    tasks: (tasksResult.data ?? []).map(mapTask),
-    activity: (activityResult.data ?? []).map(mapActivity),
-    comments: (commentsResult.data ?? []).map((row: any) => ({
-      id: row.id,
-      task_id: row.task_id,
-      user_id: row.user_id,
-      body: row.body,
-      created_at: row.created_at,
-      author: row.author ? mapProfile(row.author) : undefined
-    })) as Comment[],
-    attachments: (attachmentsResult.data ?? []).map(mapAttachment)
-  };
-}
-
-export async function getTasks() {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("tasks")
-    .select(
-      `
-        *,
-        assignee:profiles!tasks_assignee_id_fkey(*),
-        reporter:profiles!tasks_reporter_id_fkey(*),
-        projects(id, name, status, priority, progress),
-        task_tags(tags(*)),
-        task_dependencies!task_dependencies_task_id_fkey(depends_on_task_id)
-      `
-    )
-    .order("updated_at", { ascending: false });
-
-  if (error) {
+    return (data ?? []).map(mapTask);
+  } catch (error) {
+    logQueryError("getTasks", error);
     throw error;
   }
-
-  return (data ?? []).map(mapTask);
 }
 
 export async function getTaskDetail(taskId: string) {
@@ -311,92 +366,112 @@ export async function getTaskCommentsAndAttachments(taskIds: string[]) {
     return { comments: [] as Comment[], attachments: [] as Attachment[] };
   }
 
-  const supabase = await createClient();
-  const [commentsResult, attachmentsResult] = await Promise.all([
-    supabase
-      .from("comments")
-      .select("*, author:profiles!comments_user_id_fkey(*)")
-      .in("task_id", taskIds)
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("attachments")
-      .select("*, uploader:profiles!attachments_uploaded_by_fkey(*)")
-      .in("task_id", taskIds)
-      .order("created_at", { ascending: false })
-  ]);
+  try {
+    const supabase = await createClient();
+    const [commentsResult, attachmentsResult] = await Promise.all([
+      supabase
+        .from("comments")
+        .select("*, author:profiles!comments_user_id_fkey(*)")
+        .in("task_id", taskIds)
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("attachments")
+        .select("*, uploader:profiles!attachments_uploaded_by_fkey(*)")
+        .in("task_id", taskIds)
+        .order("created_at", { ascending: false })
+    ]);
 
-  return {
-    comments: (commentsResult.data ?? []).map((row: any) => ({
-      id: row.id,
-      task_id: row.task_id,
-      user_id: row.user_id,
-      body: row.body,
-      created_at: row.created_at,
-      author: row.author ? mapProfile(row.author) : undefined
-    })) as Comment[],
-    attachments: (attachmentsResult.data ?? []).map(mapAttachment)
-  };
+    return {
+      comments: (commentsResult.data ?? []).map((row: any) => ({
+        id: row.id,
+        task_id: row.task_id,
+        user_id: row.user_id,
+        body: row.body,
+        created_at: row.created_at,
+        author: row.author ? mapProfile(row.author) : undefined
+      })) as Comment[],
+      attachments: (attachmentsResult.data ?? []).map(mapAttachment)
+    };
+  } catch (error) {
+    logQueryError("getTaskCommentsAndAttachments", error, { taskIds });
+    throw error;
+  }
 }
 
 export async function getTeamMembers() {
-  const supabase = await createClient();
-  const [profilesResult, projectsResult, tasksResult] = await Promise.all([
-    supabase.from("profiles").select("*").order("full_name"),
-    supabase.from("project_members").select("user_id, project_id"),
-    supabase.from("tasks").select("assignee_id, status")
-  ]);
+  try {
+    const supabase = await createClient();
+    const [profilesResult, projectsResult, tasksResult] = await Promise.all([
+      supabase.from("profiles").select("*").order("full_name"),
+      supabase.from("project_members").select("user_id, project_id"),
+      supabase.from("tasks").select("assignee_id, status")
+    ]);
 
-  const profiles = (profilesResult.data ?? []).map(mapProfile);
-  const projectMemberships = projectsResult.data ?? [];
-  const tasks = tasksResult.data ?? [];
+    const profiles = (profilesResult.data ?? []).map(mapProfile);
+    const projectMemberships = projectsResult.data ?? [];
+    const tasks = tasksResult.data ?? [];
 
-  return profiles.map((profile) => ({
-    ...profile,
-    activeProjects: projectMemberships.filter((entry) => entry.user_id === profile.id).length,
-    assignedTasks: tasks.filter((task) => task.assignee_id === profile.id).length,
-    workloadSummary: tasks.filter((task) => task.assignee_id === profile.id && task.status !== "Done").length
-  }));
+    return profiles.map((profile) => ({
+      ...profile,
+      activeProjects: projectMemberships.filter((entry) => entry.user_id === profile.id).length,
+      assignedTasks: tasks.filter((task) => task.assignee_id === profile.id).length,
+      workloadSummary: tasks.filter((task) => task.assignee_id === profile.id && task.status !== "Done").length
+    }));
+  } catch (error) {
+    logQueryError("getTeamMembers", error);
+    throw error;
+  }
 }
 
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
-  const [projects, tasks, activity] = await Promise.all([getProjects(), getTasks(), getRecentActivity()]);
+  try {
+    const [projects, tasks, activity] = await Promise.all([getProjects(), getTasks(), getRecentActivity()]);
 
-  const activeProjects = projects.filter((project) => project.status === "Active");
-  const overdueTasks = tasks.filter((task) => isOverdue(task.due_date, task.status === "Done"));
-  const dueThisWeek = tasks.filter((task) => isDueThisWeek(task.due_date) && task.status !== "Done");
-  const atRisk = projects.filter(
-    (project) =>
-      (project.target_end_date && isApproaching(project.target_end_date) && project.progress < 60) ||
-      tasks.some((task) => task.project_id === project.id && isOverdue(task.due_date, task.status === "Done"))
-  );
+    const activeProjects = projects.filter((project) => project.status === "Active");
+    const overdueTasks = tasks.filter((task) => isOverdue(task.due_date, task.status === "Done"));
+    const dueThisWeek = tasks.filter((task) => isDueThisWeek(task.due_date) && task.status !== "Done");
+    const atRisk = projects.filter(
+      (project) =>
+        (project.target_end_date && isApproaching(project.target_end_date) && project.progress < 60) ||
+        tasks.some((task) => task.project_id === project.id && isOverdue(task.due_date, task.status === "Done"))
+    );
 
-  return {
-    totalActiveProjects: activeProjects.length,
-    totalTasks: tasks.length,
-    tasksDueThisWeek: dueThisWeek.length,
-    overdueTasks: overdueTasks.length,
-    projectsAtRisk: atRisk.length,
-    tasksByStatus: ["Not Started", "In Progress", "Blocked", "In Review", "Done"].map((status) => ({
-      status,
-      count: tasks.filter((task) => task.status === status).length
-    })) as DashboardMetrics["tasksByStatus"],
-    recentTasks: tasks.slice(0, 6),
-    recentActivity: activity.slice(0, 8),
-    spotlightProjects: atRisk.slice(0, 3)
-  };
+    return {
+      totalActiveProjects: activeProjects.length,
+      totalTasks: tasks.length,
+      tasksDueThisWeek: dueThisWeek.length,
+      overdueTasks: overdueTasks.length,
+      projectsAtRisk: atRisk.length,
+      tasksByStatus: ["Not Started", "In Progress", "Blocked", "In Review", "Done"].map((status) => ({
+        status,
+        count: tasks.filter((task) => task.status === status).length
+      })) as DashboardMetrics["tasksByStatus"],
+      recentTasks: tasks.slice(0, 6),
+      recentActivity: activity.slice(0, 8),
+      spotlightProjects: atRisk.slice(0, 3)
+    };
+  } catch (error) {
+    logQueryError("getDashboardMetrics", error);
+    throw error;
+  }
 }
 
 export async function getRecentActivity() {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("activity_logs")
-    .select("*, actor:profiles!activity_logs_user_id_fkey(*)")
-    .order("created_at", { ascending: false })
-    .limit(20);
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("activity_logs")
+      .select("*, actor:profiles!activity_logs_user_id_fkey(*)")
+      .order("created_at", { ascending: false })
+      .limit(20);
 
-  if (error) {
+    if (error) {
+      throw error;
+    }
+
+    return (data ?? []).map(mapActivity);
+  } catch (error) {
+    logQueryError("getRecentActivity", error);
     throw error;
   }
-
-  return (data ?? []).map(mapActivity);
 }

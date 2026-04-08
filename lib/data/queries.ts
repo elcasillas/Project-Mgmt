@@ -432,8 +432,13 @@ export async function getTeamMembers() {
 export async function getUsersDirectory() {
   try {
     const supabase = await createClient();
-    const [profilesResult, membershipsResult, tasksResult] = await Promise.all([
-      supabase.from("profiles").select("*").is("deleted_at", null).order("created_at", { ascending: false }),
+    let profilesResult = await supabase.from("profiles").select("*").is("deleted_at", null).order("created_at", { ascending: false });
+
+    if (profilesResult.error?.code === "42703") {
+      profilesResult = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
+    }
+
+    const [membershipsResult, tasksResult] = await Promise.all([
       supabase.from("project_members").select("user_id"),
       supabase.from("tasks").select("assignee_id")
     ]);

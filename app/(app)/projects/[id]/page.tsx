@@ -6,16 +6,23 @@ import { AvatarGroup } from "@/components/ui/avatar-group";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { getProjectDetail } from "@/lib/data/queries";
+import { getCurrentProfile, getProjectDetail, getProjects, getTeamMembers } from "@/lib/data/queries";
 import { formatDate } from "@/lib/utils/format";
 
 export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const detail = await getProjectDetail(id).catch(() => null);
+  const [detail, projects, teamMembers, currentProfile] = await Promise.all([
+    getProjectDetail(id).catch(() => null),
+    getProjects(),
+    getTeamMembers(),
+    getCurrentProfile().catch(() => null)
+  ]);
 
   if (!detail) {
     notFound();
   }
+
+  const profiles = teamMembers.map(({ activeProjects, assignedTasks, workloadSummary, ...profile }) => profile);
 
   return (
     <div className="space-y-8">
@@ -48,6 +55,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         activity={detail.activity}
         comments={detail.comments}
         attachments={detail.attachments}
+        profiles={profiles}
+        projects={projects}
+        currentUserRole={currentProfile?.role ?? null}
       />
     </div>
   );

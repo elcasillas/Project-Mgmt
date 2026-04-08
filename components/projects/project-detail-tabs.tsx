@@ -3,14 +3,16 @@
 import { useMemo, useState } from "react";
 import { addCommentAction, deleteAttachmentAction } from "@/lib/actions/workspace";
 import { AttachmentUploader } from "@/components/shared/attachment-uploader";
+import { TaskFormModal } from "@/components/tasks/task-form-modal";
 import { AvatarGroup } from "@/components/ui/avatar-group";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
+import { canManageTasks } from "@/lib/utils/permissions";
 import { formatDate, formatRelative } from "@/lib/utils/format";
-import type { Attachment, Comment, Project, Task, ActivityLog } from "@/lib/types/domain";
+import type { Attachment, Comment, Project, Task, ActivityLog, Profile, UserRole } from "@/lib/types/domain";
 
 type Tab = "Overview" | "Tasks" | "Team" | "Activity" | "Files";
 
@@ -19,16 +21,23 @@ export function ProjectDetailTabs({
   tasks,
   activity,
   comments,
-  attachments
+  attachments,
+  profiles,
+  projects,
+  currentUserRole
 }: {
   project: Project;
   tasks: Task[];
   activity: ActivityLog[];
   comments: Comment[];
   attachments: Attachment[];
+  profiles: Profile[];
+  projects: Project[];
+  currentUserRole?: UserRole | null;
 }) {
   const [tab, setTab] = useState<Tab>("Overview");
   const latestComments = useMemo(() => comments.slice(0, 8), [comments]);
+  const canEditTasks = canManageTasks(currentUserRole);
 
   return (
     <div className="space-y-6">
@@ -107,13 +116,23 @@ export function ProjectDetailTabs({
         <Card className="space-y-4">
           {tasks.map((task) => (
             <div key={task.id} className="flex flex-col gap-3 rounded-2xl border border-slate-100 p-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="font-medium text-slate-900">{task.title}</p>
                 <p className="mt-1 text-sm text-slate-500">{task.description}</p>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center gap-2 lg:justify-end">
                 <Badge value={task.status} />
                 <Badge value={task.priority} />
+                {canEditTasks ? (
+                  <TaskFormModal
+                    profiles={profiles}
+                    projects={projects}
+                    task={task}
+                    triggerLabel="Edit"
+                    triggerVariant="secondary"
+                    triggerSize="sm"
+                  />
+                ) : null}
               </div>
             </div>
           ))}

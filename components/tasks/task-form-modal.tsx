@@ -16,12 +16,18 @@ export function TaskFormModal({
   profiles,
   projects,
   task,
-  triggerLabel = "New Task"
+  triggerLabel = "New Task",
+  triggerVariant,
+  triggerSize,
+  redirectPath
 }: {
   profiles: Profile[];
   projects: Project[];
   task?: Task;
   triggerLabel?: string;
+  triggerVariant?: "primary" | "secondary" | "ghost" | "danger";
+  triggerSize?: "sm" | "md";
+  redirectPath?: string;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -31,7 +37,11 @@ export function TaskFormModal({
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} variant={task ? "secondary" : "primary"}>
+      <Button
+        onClick={() => setOpen(true)}
+        variant={triggerVariant ?? (task ? "secondary" : "primary")}
+        size={triggerSize ?? "md"}
+      >
         {triggerLabel}
       </Button>
       <Modal
@@ -147,7 +157,9 @@ export function TaskFormModal({
                     return;
                   }
                   setOpen(false);
-                  router.push(`/tasks?success=${encodeURIComponent(result.message)}`);
+                  if (redirectPath) {
+                    router.push(`${redirectPath}?success=${encodeURIComponent(result.message)}`);
+                  }
                   router.refresh();
                 });
               }}

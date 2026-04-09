@@ -2,7 +2,7 @@
 
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
@@ -17,6 +17,7 @@ export function TaskFormModal({
   profiles,
   projects,
   task,
+  availableTasks = [],
   triggerLabel = "New Task",
   triggerVariant,
   triggerSize,
@@ -25,6 +26,7 @@ export function TaskFormModal({
   profiles: Profile[];
   projects: Project[];
   task?: Task;
+  availableTasks?: Task[];
   triggerLabel?: string;
   triggerVariant?: "primary" | "secondary" | "ghost" | "danger";
   triggerSize?: "sm" | "md";
@@ -34,7 +36,50 @@ export function TaskFormModal({
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState(task?.project_id ?? "");
+  const [selectedDependencyIds, setSelectedDependencyIds] = useState<string[]>(task?.dependency_ids ?? []);
+  const [dependencyQuery, setDependencyQuery] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
+  const availableDependencyTasks = availableTasks.filter(
+    (candidateTask) => candidateTask.project_id === selectedProjectId && candidateTask.id !== task?.id
+  );
+  const filteredDependencyTasks = availableDependencyTasks.filter((candidateTask) => {
+    const query = dependencyQuery.trim().toLowerCase();
+    if (!query) {
+      return true;
+    }
+
+    return (
+      candidateTask.title.toLowerCase().includes(query) ||
+      candidateTask.status.toLowerCase().includes(query) ||
+      candidateTask.id.toLowerCase().includes(query)
+    );
+  });
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    setSelectedProjectId(task?.project_id ?? "");
+    setSelectedDependencyIds(task?.dependency_ids ?? []);
+    setDependencyQuery("");
+    setError(null);
+  }, [open, task]);
+
+  useEffect(() => {
+    if (!selectedProjectId) {
+      setSelectedDependencyIds([]);
+      return;
+    }
+
+    const validDependencyIds = new Set(
+      availableTasks
+        .filter((candidateTask) => candidateTask.project_id === selectedProjectId && candidateTask.id !== task?.id)
+        .map((candidateTask) => candidateTask.id)
+    );
+    setSelectedDependencyIds((current) => current.filter((dependencyId) => validDependencyIds.has(dependencyId)));
+  }, [selectedProjectId, task?.id, availableTasks]);
 
   return (
     <>
@@ -64,7 +109,13 @@ export function TaskFormModal({
             <Input name="title" defaultValue={task?.title} required />
           </FormField>
           <FormField label="Project">
-            <Select name="project_id" defaultValue={task?.project_id ?? ""}>
+            <Select
+              name="project_id"
+              value={selectedProjectId}
+              onChange={(event) => {
+                setSelectedProjectId(event.target.value);
+              }}
+            >
               <option value="">No project</option>
               {projects.map((project) => (
                 <option key={project.id} value={project.id}>
@@ -133,8 +184,79 @@ export function TaskFormModal({
             </FormField>
           </div>
           <div className="md:col-span-2">
-            <FormField label="Dependency task ids" hint="Comma-separated UUIDs.">
-              <Input name="dependency_ids" defaultValue={task?.dependency_ids?.join(", ")} />
+            <FormField
+              label="Dependencies"
+              hint={
+                selectedProjectId
+                  ? "Select tasks in this project that must be completed first."
+                  : "Choose a project before selecting dependencies."
+              }
+            >
+              <input type="hidden" name="dependency_ids" value={selectedDependencyIds.join(",")} />
+              <div className="space-y-3 rounded-[11px] border border-[rgba(29,29,31,0.08)] bg-[#fafafc] p-4">
+                <Input
+                  value={dependencyQuery}
+                  onChange={(event) => setDependencyQuery(event.target.value)}
+                  placeholder="Search tasks by name, status, or ID"
+                  disabled={!selectedProjectId || !availableDependencyTasks.length}
+                />
+                {selectedProjectId ? (
+                  availableDependencyTasks.length ? (
+                    <div className="max-h-56 space-y-2 overflow-y-auto">
+                      {filteredDependencyTasks.length ? (
+                        filteredDependencyTasks.map((candidateTask) => {
+                          const isSelected = selectedDependencyIds.includes(candidateTask.id);
+
+                          return (
+                            <button
+                              key={candidateTask.id}
+                              type="button"
+                              className={`flex w-full items-start justify-between rounded-2xl border px-4 py-3 text-left transition ${
+                                isSelected
+                                  ? "border-[#0071e3] bg-[#e8f3ff]"
+                                  : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
+                              }`}
+                              onClick={() => {
+                                setSelectedDependencyIds((current) =>
+                                  current.includes(candidateTask.id)
+                                    ? current.filter((dependencyId) => dependencyId !== candidateTask.id)
+                                    : [...current, candidateTask.id]
+                                );
+                              }}
+                            >
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-medium text-slate-900">{candidateTask.title}</p>
+                                <p className="mt-1 text-xs text-slate-500">
+                                  {candidateTask.status} • {candidateTask.id}
+                                </p>
+                              </div>
+                              <span
+                                className={`ml-4 mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs ${
+                                  isSelected ? "border-[#0071e3] bg-[#0071e3] text-white" : "border-gray-300 text-transparent"
+                                }`}
+                              >
+                                ✓
+                              </span>
+                            </button>
+                          );
+                        })
+                      ) : (
+                        <p className="rounded-2xl border border-dashed border-gray-200 bg-white px-4 py-3 text-sm text-slate-500">
+                          No matching tasks found in this project.
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="rounded-2xl border border-dashed border-gray-200 bg-white px-4 py-3 text-sm text-slate-500">
+                      No other tasks available in this project.
+                    </p>
+                  )
+                ) : (
+                  <p className="rounded-2xl border border-dashed border-gray-200 bg-white px-4 py-3 text-sm text-slate-500">
+                    Select a project to choose dependency tasks.
+                  </p>
+                )}
+              </div>
             </FormField>
           </div>
           <div className="md:col-span-2 flex justify-end gap-3">

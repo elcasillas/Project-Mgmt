@@ -127,6 +127,7 @@ export function ProjectDetailTabs({
                   <TaskFormModal
                     profiles={profiles}
                     projects={projects}
+                    availableTasks={tasks}
                     task={task}
                     triggerLabel="Edit"
                     triggerVariant="secondary"

@@ -122,7 +122,7 @@ export function TasksView({
               {mode[0].toUpperCase() + mode.slice(1)}
             </Button>
           ))}
-          <TaskFormModal profiles={profiles} projects={projects} redirectPath="/tasks" />
+          <TaskFormModal profiles={profiles} projects={projects} availableTasks={tasks} redirectPath="/tasks" />
         </div>
       </div>
 
@@ -157,7 +157,14 @@ export function TasksView({
                     <td className="px-6 py-4 text-slate-600">{formatDate(task.due_date)}</td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2">
-                        <TaskFormModal profiles={profiles} projects={projects} task={task} triggerLabel="Edit" redirectPath="/tasks" />
+                        <TaskFormModal
+                          profiles={profiles}
+                          projects={projects}
+                          availableTasks={tasks}
+                          task={task}
+                          triggerLabel="Edit"
+                          redirectPath="/tasks"
+                        />
                         <form action={deleteTaskAction}>
                           <input type="hidden" name="task_id" value={task.id} />
                           <Button variant="ghost" size="sm">

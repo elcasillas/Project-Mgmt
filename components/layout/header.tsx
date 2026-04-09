@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import type { Route } from "next";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { LogOut, Menu, Plus, Search } from "lucide-react";
+import { LogOut, Menu, Search } from "lucide-react";
 import { logoutAction } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +19,6 @@ export function Header({
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
 
   return (
     <header className="sticky top-0 z-30 border-b border-white/10 bg-[rgba(0,0,0,0.82)] backdrop-blur-[20px] backdrop-saturate-150">
@@ -41,16 +39,6 @@ export function Header({
             <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
             <Input className="border-white/10 bg-white/10 pl-11 text-white placeholder:text-white/35" placeholder="Search projects, tasks, or descriptions" />
           </div>
-        </div>
-        <div className="hidden items-center gap-3 sm:flex">
-          <Button variant="secondary" onClick={() => router.push("/projects" as Route)}>
-            <Plus className="mr-2 h-4 w-4" />
-            New Project
-          </Button>
-          <Button onClick={() => router.push("/tasks" as Route)}>
-            <Plus className="mr-2 h-4 w-4" />
-            New Task
-          </Button>
         </div>
         <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/10 text-sm font-semibold text-white">
           {profile?.full_name
@@ -88,14 +76,6 @@ export function Header({
             ))}
           </nav>
           <Input className="border-white/10 bg-white/10 text-white placeholder:text-white/35" placeholder="Search projects, tasks, or descriptions" />
-          <div className="flex gap-3">
-            <Button variant="secondary" className="flex-1" onClick={() => router.push("/projects" as Route)}>
-              New Project
-            </Button>
-            <Button className="flex-1" onClick={() => router.push("/tasks" as Route)}>
-              New Task
-            </Button>
-          </div>
           <form action={logoutAction}>
             <Button
               variant="ghost"

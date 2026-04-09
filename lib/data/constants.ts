@@ -1,7 +1,7 @@
 import type { Route } from "next";
 import type { ProjectPriority, ProjectStatus, TaskPriority, TaskStatus, UserRole, UserStatus } from "@/lib/types/domain";
 
-export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || "Northstar PM";
+export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || "CASI BROS PROJECT CENTER";
 
 export const USER_ROLES: UserRole[] = ["Admin", "Project Manager", "Team Member", "Viewer"];
 export const USER_STATUSES: UserStatus[] = ["Active", "Inactive", "Pending"];

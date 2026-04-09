@@ -152,6 +152,9 @@ export function ProjectDetailTabs({
                     availableTasks={tasks}
                     task={task}
                     triggerLabel="Edit"
+                    triggerAriaLabel="Edit Task"
+                    triggerTitle="Edit Task"
+                    triggerIconOnly
                     triggerVariant="secondary"
                     triggerSize="sm"
                   />

@@ -1,5 +1,6 @@
 "use client";
 
+import { Pencil } from "lucide-react";
 import { useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { FormField } from "@/components/shared/form-field";
@@ -13,10 +14,16 @@ import type { UserDirectoryEntry } from "@/lib/types/domain";
 
 export function UserFormModal({
   triggerLabel,
-  user
+  user,
+  triggerAriaLabel,
+  triggerTitle,
+  triggerIconOnly = false
 }: {
   triggerLabel: string;
   user?: UserDirectoryEntry;
+  triggerAriaLabel?: string;
+  triggerTitle?: string;
+  triggerIconOnly?: boolean;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -35,8 +42,19 @@ export function UserFormModal({
 
   return (
     <>
-      <Button variant={user ? "secondary" : "primary"} size="sm" onClick={() => setOpen(true)}>
-        {triggerLabel}
+      <Button
+        variant={user ? "secondary" : "primary"}
+        size="sm"
+        onClick={() => setOpen(true)}
+        className={
+          triggerIconOnly
+            ? "h-9 w-9 rounded-md border border-gray-200 bg-transparent p-0 text-slate-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#00ADB1]"
+            : undefined
+        }
+        aria-label={triggerAriaLabel ?? triggerLabel}
+        title={triggerTitle ?? triggerAriaLabel ?? triggerLabel}
+      >
+        {triggerIconOnly ? <Pencil className="h-4 w-4" /> : triggerLabel}
       </Button>
       <Modal
         open={open}

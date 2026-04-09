@@ -185,6 +185,9 @@ export function TasksView({
                           availableTasks={tasks}
                           task={task}
                           triggerLabel="Edit"
+                          triggerAriaLabel="Edit Task"
+                          triggerTitle="Edit Task"
+                          triggerIconOnly
                           redirectPath="/tasks"
                         />
                         <form action={deleteTaskAction}>

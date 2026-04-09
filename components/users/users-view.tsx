@@ -89,7 +89,15 @@ export function UsersView({
                   <td className="px-6 py-4 text-slate-600">{formatDate(user.last_active_at)}</td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
-                      {canManageUsers ? <UserFormModal triggerLabel="Edit" user={user} /> : null}
+                      {canManageUsers ? (
+                        <UserFormModal
+                          triggerLabel="Edit"
+                          triggerAriaLabel="Edit User"
+                          triggerTitle="Edit User"
+                          triggerIconOnly
+                          user={user}
+                        />
+                      ) : null}
                       {canManageUsers ? <RemoveUserModal user={user} /> : null}
                     </div>
                   </td>

@@ -109,7 +109,16 @@ export function ProjectsView({
                 <p className="text-xs text-slate-500">Target {formatDate(project.target_end_date)}</p>
               </div>
               <div className="flex gap-2">
-                {canManageProjects ? <ProjectFormModal profiles={profiles} project={project} triggerLabel="Edit" /> : null}
+                {canManageProjects ? (
+                  <ProjectFormModal
+                    profiles={profiles}
+                    project={project}
+                    triggerLabel="Edit"
+                    triggerAriaLabel="Edit Project"
+                    triggerTitle="Edit Project"
+                    triggerIconOnly
+                  />
+                ) : null}
                 {canManageProjects ? (
                   <form action={archiveProjectAction}>
                     <input type="hidden" name="project_id" value={project.id} />
@@ -157,7 +166,16 @@ export function ProjectsView({
                     </td>
                     <td className="px-6 py-4 text-slate-600">{formatDate(project.target_end_date)}</td>
                     <td className="px-6 py-4">
-                      {canManageProjects ? <ProjectFormModal profiles={profiles} project={project} triggerLabel="Edit" /> : null}
+                      {canManageProjects ? (
+                        <ProjectFormModal
+                          profiles={profiles}
+                          project={project}
+                          triggerLabel="Edit"
+                          triggerAriaLabel="Edit Project"
+                          triggerTitle="Edit Project"
+                          triggerIconOnly
+                        />
+                      ) : null}
                     </td>
                   </tr>
                 ))}

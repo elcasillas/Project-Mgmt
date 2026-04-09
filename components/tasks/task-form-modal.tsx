@@ -1,5 +1,6 @@
 "use client";
 
+import { Pencil } from "lucide-react";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
@@ -19,6 +20,9 @@ export function TaskFormModal({
   task,
   availableTasks = [],
   triggerLabel = "New Task",
+  triggerAriaLabel,
+  triggerTitle,
+  triggerIconOnly = false,
   triggerVariant,
   triggerSize,
   redirectPath
@@ -28,6 +32,9 @@ export function TaskFormModal({
   task?: Task;
   availableTasks?: Task[];
   triggerLabel?: string;
+  triggerAriaLabel?: string;
+  triggerTitle?: string;
+  triggerIconOnly?: boolean;
   triggerVariant?: "primary" | "secondary" | "ghost" | "danger";
   triggerSize?: "sm" | "md";
   redirectPath?: string;
@@ -87,8 +94,15 @@ export function TaskFormModal({
         onClick={() => setOpen(true)}
         variant={triggerVariant ?? (task ? "secondary" : "primary")}
         size={triggerSize ?? "md"}
+        className={
+          triggerIconOnly
+            ? "h-9 w-9 rounded-md border border-gray-200 bg-transparent p-0 text-slate-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#00ADB1]"
+            : undefined
+        }
+        aria-label={triggerAriaLabel ?? triggerLabel}
+        title={triggerTitle ?? triggerAriaLabel ?? triggerLabel}
       >
-        {triggerLabel}
+        {triggerIconOnly ? <Pencil className="h-4 w-4" /> : triggerLabel}
       </Button>
       <Modal
         open={open}

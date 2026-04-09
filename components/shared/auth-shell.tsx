@@ -20,7 +20,7 @@ export function AuthShell({
         <div>
           <Image src={logo} alt="Casibros" className="h-auto w-[180px]" priority />
           <h1 className="mt-8 max-w-md text-5xl font-semibold tracking-tight">{heroTitle}</h1>
-          <p className="mt-4 max-w-lg text-base text-slate-300">Plan, prioritize, and deliver work with clear status tracking, collaboration, and portfolio-level visibility.</p>
+          <p className="mt-4 max-w-lg text-base text-slate-300">Plan, Prioritize, and Deliver Work</p>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="rounded-3xl border border-white/10 bg-white/5 p-5">

@@ -3,7 +3,6 @@ import { RecentActivityFeed } from "@/components/dashboard/recent-activity-feed"
 import { RecentTasksPanel } from "@/components/dashboard/recent-tasks-panel";
 import { StatusChart } from "@/components/dashboard/status-chart";
 import { SummaryCard } from "@/components/dashboard/summary-card";
-import { RealtimeRefresh } from "@/components/shared/realtime-refresh";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { getDashboardMetrics } from "@/lib/data/queries";
@@ -13,7 +12,6 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <RealtimeRefresh tables={["projects", "tasks", "activity_logs"]} />
       <PageHeader
         eyebrow="Overview"
         title="Delivery Dashboard"

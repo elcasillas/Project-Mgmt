@@ -1,5 +1,4 @@
 import { PageHeader } from "@/components/shared/page-header";
-import { RealtimeRefresh } from "@/components/shared/realtime-refresh";
 import { UsersView } from "@/components/users/users-view";
 import { Card } from "@/components/ui/card";
 import { getCurrentProfile, getUsersDirectory } from "@/lib/data/queries";
@@ -26,7 +25,6 @@ export default async function UsersPage({
 
   return (
     <div className="space-y-8">
-      <RealtimeRefresh tables={["profiles", "project_members", "tasks"]} />
       <PageHeader
         eyebrow="Workspace"
         title="Users"

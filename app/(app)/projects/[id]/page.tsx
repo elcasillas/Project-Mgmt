@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/shared/page-header";
 import { ProjectDetailTabs } from "@/components/projects/project-detail-tabs";
-import { RealtimeRefresh } from "@/components/shared/realtime-refresh";
 import { AvatarGroup } from "@/components/ui/avatar-group";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -26,7 +25,6 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
   return (
     <div className="space-y-8">
-      <RealtimeRefresh tables={["projects", "tasks", "comments", "attachments", "activity_logs"]} />
       <PageHeader
         eyebrow="Project Detail"
         title={detail.project.name}

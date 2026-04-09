@@ -52,9 +52,7 @@ export function Sidebar() {
           <Bell className="h-5 w-5" />
         </div>
         <p className="text-[17px] font-semibold tracking-[-0.02em] text-white">Operational pulse</p>
-        <p className="mt-2 text-[14px] leading-[1.43] tracking-[-0.01em] text-white/62">
-          Live project and task updates stream through the workspace in real time.
-        </p>
+        <p className="mt-2 text-[14px] leading-[1.43] tracking-[-0.01em] text-white/62">Project and task activity stays organized across the workspace.</p>
       </div>
     </aside>
   );

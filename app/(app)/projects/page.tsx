@@ -1,6 +1,5 @@
 import { PageHeader } from "@/components/shared/page-header";
 import { ProjectsView } from "@/components/projects/projects-view";
-import { RealtimeRefresh } from "@/components/shared/realtime-refresh";
 import { Card } from "@/components/ui/card";
 import { getCurrentProfile, getProjects, getTeamMembers } from "@/lib/data/queries";
 
@@ -16,7 +15,6 @@ export default async function ProjectsPage({
 
   return (
     <div className="space-y-8">
-      <RealtimeRefresh tables={["projects", "project_members", "tasks"]} />
       <PageHeader
         eyebrow="Portfolio"
         title="Projects"

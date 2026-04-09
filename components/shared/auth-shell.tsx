@@ -18,9 +18,7 @@ export function AuthShell({
         <div>
           <Image src={logo} alt="Casibros" className="h-auto w-[180px]" priority />
           <h1 className="mt-8 max-w-md text-5xl font-semibold tracking-tight">Project execution with the clarity of an executive operating rhythm.</h1>
-          <p className="mt-4 max-w-lg text-base text-slate-300">
-            Plan, prioritize, and deliver work with live status tracking, collaboration, and portfolio-level visibility.
-          </p>
+          <p className="mt-4 max-w-lg text-base text-slate-300">Plan, prioritize, and deliver work with clear status tracking, collaboration, and portfolio-level visibility.</p>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
@@ -28,8 +26,8 @@ export function AuthShell({
             <p className="mt-2 text-3xl font-semibold">7-day runway</p>
           </div>
           <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-            <p className="text-sm text-slate-300">Realtime collaboration</p>
-            <p className="mt-2 text-3xl font-semibold">Always current</p>
+            <p className="text-sm text-slate-300">Coordinated delivery</p>
+            <p className="mt-2 text-3xl font-semibold">Shared visibility</p>
           </div>
         </div>
       </div>

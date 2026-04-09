@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { canManageTasks } from "@/lib/utils/permissions";
+import { resolveTaskDependencyNames } from "@/lib/utils/task-dependencies";
 import { formatDate, formatRelative } from "@/lib/utils/format";
 import type { Attachment, Comment, Project, Task, ActivityLog, Profile, UserRole } from "@/lib/types/domain";
 
@@ -89,6 +90,9 @@ export function ProjectDetailTabs({
                     <Badge value={task.status} />
                   </div>
                   <p className="mt-2 text-sm text-slate-500">{task.assignee?.full_name ?? "Unassigned"}</p>
+                  <p className="mt-2 text-xs text-slate-500" title={resolveTaskDependencyNames(task, tasks).join(", ") || "None"}>
+                    Dependencies: {resolveTaskDependencyNames(task, tasks).join(", ") || "None"}
+                  </p>
                 </div>
               ))}
             </div>
@@ -114,11 +118,29 @@ export function ProjectDetailTabs({
 
       {tab === "Tasks" ? (
         <Card className="space-y-4">
-          {tasks.map((task) => (
-            <div key={task.id} className="flex flex-col gap-3 rounded-2xl border border-slate-100 p-4 lg:flex-row lg:items-center lg:justify-between">
+          {tasks.map((task) => {
+            const dependencyNames = resolveTaskDependencyNames(task, tasks);
+
+            return (
+            <div key={task.id} className="flex flex-col gap-3 rounded-2xl border border-slate-100 p-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0 flex-1">
                 <p className="font-medium text-slate-900">{task.title}</p>
                 <p className="mt-1 text-sm text-slate-500">{task.description}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {dependencyNames.length ? (
+                    dependencyNames.map((dependencyName) => (
+                      <span
+                        key={`${task.id}:${dependencyName}`}
+                        title={dependencyName}
+                        className="max-w-full truncate rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-slate-600"
+                      >
+                        {dependencyName}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-sm text-slate-500">Dependencies: None</span>
+                  )}
+                </div>
               </div>
               <div className="flex flex-wrap items-center gap-2 lg:justify-end">
                 <Badge value={task.status} />
@@ -136,7 +158,7 @@ export function ProjectDetailTabs({
                 ) : null}
               </div>
             </div>
-          ))}
+          )})}
         </Card>
       ) : null}
 

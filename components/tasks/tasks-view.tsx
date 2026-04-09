@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDate, isDueThisWeek, isOverdue } from "@/lib/utils/format";
+import { resolveTaskDependencyNames } from "@/lib/utils/task-dependencies";
 import type { Attachment, Comment, Profile, Project, Task } from "@/lib/types/domain";
 
 type ViewMode = "table" | "kanban" | "calendar";
@@ -134,6 +135,7 @@ export function TasksView({
                 <tr>
                   <th className="px-6 py-4 font-medium">Task</th>
                   <th className="px-6 py-4 font-medium">Project</th>
+                  <th className="px-6 py-4 font-medium">Dependencies</th>
                   <th className="px-6 py-4 font-medium">Status</th>
                   <th className="px-6 py-4 font-medium">Priority</th>
                   <th className="px-6 py-4 font-medium">Assignee</th>
@@ -142,20 +144,40 @@ export function TasksView({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredTasks.map((task) => (
+                {filteredTasks.map((task) => {
+                  const dependencyNames = resolveTaskDependencyNames(task, tasks);
+
+                  return (
                   <tr key={task.id} className={task.id === selectedTask?.id ? "bg-sky-50/70" : ""}>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 align-top">
                       <div>
                         <p className="font-medium text-slate-950">{task.title}</p>
                         <p className="text-slate-500">{task.description || "No description"}</p>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-600">{task.project?.name ?? "No project"}</td>
-                    <td className="px-6 py-4"><Badge value={task.status} /></td>
-                    <td className="px-6 py-4"><Badge value={task.priority} /></td>
-                    <td className="px-6 py-4 text-slate-600">{task.assignee?.full_name ?? "Unassigned"}</td>
-                    <td className="px-6 py-4 text-slate-600">{formatDate(task.due_date)}</td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 align-top text-slate-600">{task.project?.name ?? "No project"}</td>
+                    <td className="px-6 py-4 align-top">
+                      {dependencyNames.length ? (
+                        <div className="flex max-w-[260px] flex-wrap gap-2">
+                          {dependencyNames.map((dependencyName) => (
+                            <span
+                              key={`${task.id}:${dependencyName}`}
+                              title={dependencyName}
+                              className="max-w-full truncate rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-slate-600"
+                            >
+                              {dependencyName}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-slate-500">None</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 align-top"><Badge value={task.status} /></td>
+                    <td className="px-6 py-4 align-top"><Badge value={task.priority} /></td>
+                    <td className="px-6 py-4 align-top text-slate-600">{task.assignee?.full_name ?? "Unassigned"}</td>
+                    <td className="px-6 py-4 align-top text-slate-600">{formatDate(task.due_date)}</td>
+                    <td className="px-6 py-4 align-top">
                       <div className="flex gap-2">
                         <TaskFormModal
                           profiles={profiles}
@@ -174,7 +196,7 @@ export function TasksView({
                       </div>
                     </td>
                   </tr>
-                ))}
+                )})}
               </tbody>
             </table>
           </div>

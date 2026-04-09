@@ -26,30 +26,8 @@ export async function loginAction(formData: FormData) {
 }
 
 export async function signupAction(formData: FormData) {
-  const supabase = await createClient();
-  const fullName = String(formData.get("full_name") || "");
-  const email = String(formData.get("email") || "");
-  const password = String(formData.get("password") || "");
-
-  const { error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        full_name: fullName,
-        first_name: fullName.split(" ")[0] ?? fullName,
-        last_name: fullName.split(" ").slice(1).join(" "),
-        role: "Team Member",
-        status: "Active"
-      }
-    }
-  });
-
-  if (error) {
-    redirect(`/signup?error=${encodeURIComponent(error.message)}`);
-  }
-
-  redirect("/login?message=Check your email to verify your account.");
+  void formData;
+  redirect("/signup?message=Account+creation+is+managed+by+your+administrator.");
 }
 
 export async function forgotPasswordAction(formData: FormData) {

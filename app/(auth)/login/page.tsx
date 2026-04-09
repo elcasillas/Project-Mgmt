@@ -23,14 +23,14 @@ export default async function LoginPage({
         </FormField>
         {params.error ? <p className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{params.error}</p> : null}
         {params.message ? <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{params.message}</p> : null}
+        <p className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+          Account access is managed by your administrator. Contact your admin if you need a new account.
+        </p>
         <Button className="w-full">Sign in</Button>
       </form>
-      <div className="mt-6 flex items-center justify-between text-sm text-slate-500">
+      <div className="mt-6 flex items-center justify-start text-sm text-slate-500">
         <Link href="/forgot-password" className="text-sky-600 hover:text-sky-700">
           Forgot password?
-        </Link>
-        <Link href="/signup" className="text-sky-600 hover:text-sky-700">
-          Create account
         </Link>
       </div>
     </AuthShell>

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, FolderKanban, LayoutGrid, ListTodo, Settings, ShieldUser, Users } from "lucide-react";
+import { FolderKanban, LayoutGrid, ListTodo, Settings, ShieldUser, Users } from "lucide-react";
 import logo from "@/casibros-white.png";
 import { NAV_ITEMS } from "@/lib/data/constants";
 import { cn } from "@/lib/utils/cn";
@@ -46,14 +46,6 @@ export function Sidebar() {
           );
         })}
       </nav>
-
-      <div className="mt-auto rounded-[8px] bg-[#1d1d1f] p-5">
-        <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/8 text-[#2997ff]">
-          <Bell className="h-5 w-5" />
-        </div>
-        <p className="text-[17px] font-semibold tracking-[-0.02em] text-white">Operational pulse</p>
-        <p className="mt-2 text-[14px] leading-[1.43] tracking-[-0.01em] text-white/62">Project and task activity stays organized across the workspace.</p>
-      </div>
     </aside>
   );
 }

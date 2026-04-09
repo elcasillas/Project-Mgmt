@@ -13,7 +13,11 @@ export default async function LoginPage({
   const params = await searchParams;
 
   return (
-    <AuthShell title="Sign in" description="Access your project portfolio, task boards, and team workspace.">
+    <AuthShell
+      title="Sign in"
+      description="Access your project portfolio, task boards, and team workspace."
+      heroTitle="Project Execution Platform"
+    >
       <form action={loginAction} className="space-y-5">
         <FormField label="Email" htmlFor="email">
           <Input id="email" name="email" type="email" required placeholder="you@company.com" />

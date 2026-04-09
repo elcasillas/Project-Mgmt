@@ -6,10 +6,12 @@ import { APP_NAME } from "@/lib/data/constants";
 export function AuthShell({
   title,
   description,
+  heroTitle = "Project execution with the clarity of an executive operating rhythm.",
   children
 }: {
   title: string;
   description: string;
+  heroTitle?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -17,7 +19,7 @@ export function AuthShell({
       <div className="hidden flex-1 flex-col justify-between bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.35),_transparent_35%),linear-gradient(180deg,_#020617_0%,_#0f172a_100%)] p-12 lg:flex">
         <div>
           <Image src={logo} alt="Casibros" className="h-auto w-[180px]" priority />
-          <h1 className="mt-8 max-w-md text-5xl font-semibold tracking-tight">Project execution with the clarity of an executive operating rhythm.</h1>
+          <h1 className="mt-8 max-w-md text-5xl font-semibold tracking-tight">{heroTitle}</h1>
           <p className="mt-4 max-w-lg text-base text-slate-300">Plan, prioritize, and deliver work with clear status tracking, collaboration, and portfolio-level visibility.</p>
         </div>
         <div className="grid grid-cols-2 gap-4">

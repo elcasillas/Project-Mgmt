@@ -88,10 +88,7 @@ export function TaskTable({
               return (
                 <tr key={task.id} className={task.id === selectedTaskId ? "bg-sky-50/70" : ""}>
                   <td className="px-6 py-4 align-top">
-                    <div>
-                      <p className="font-medium text-slate-950">{task.title}</p>
-                      <p className="text-slate-500">{task.description || "No description"}</p>
-                    </div>
+                    <p className="font-medium text-slate-950">{task.title}</p>
                   </td>
                   <td className="px-6 py-4 align-top text-slate-600">{task.project?.name ?? "No project"}</td>
                   <td className="px-6 py-4 align-top">

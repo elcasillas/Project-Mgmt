@@ -22,14 +22,10 @@ export function AuthShell({
           <h1 className="mt-8 max-w-md text-5xl font-semibold tracking-tight">{heroTitle}</h1>
           <p className="mt-4 max-w-lg text-base text-slate-300">Plan, Prioritize, and Deliver Work</p>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
+        <div className="grid grid-cols-1 justify-center">
+          <div className="mx-auto w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-5">
             <p className="text-sm text-slate-300">Projects at risk surfaced early</p>
             <p className="mt-2 text-3xl font-semibold">7-day runway</p>
-          </div>
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-            <p className="text-sm text-slate-300">Coordinated delivery</p>
-            <p className="mt-2 text-3xl font-semibold">Shared visibility</p>
           </div>
         </div>
       </div>

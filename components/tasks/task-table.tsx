@@ -1,12 +1,14 @@
 "use client";
 
-import { Trash } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Trash } from "lucide-react";
 import { deleteTaskAction } from "@/lib/actions/workspace";
 import { TaskFormModal } from "@/components/tasks/task-form-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils/format";
+import { sortTasksByDueDate, type DueDateSortDirection } from "@/lib/utils/task-sorting";
 import { resolveTaskDependencyNames } from "@/lib/utils/task-dependencies";
 import type { Profile, Project, Task } from "@/lib/types/domain";
 
@@ -27,9 +29,17 @@ export function TaskTable({
   canEditTasks?: boolean;
   redirectPath?: string;
 }) {
+  const [dueDateSort, setDueDateSort] = useState<DueDateSortDirection | null>(null);
   const taskActionButtonClassName =
     "h-9 w-9 rounded-md border border-gray-200 bg-transparent p-0 text-slate-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#00ADB1]";
   const taskDeleteButtonClassName = `${taskActionButtonClassName} hover:text-red-600 active:text-red-600`;
+  const visibleTasks = useMemo(() => {
+    if (!dueDateSort) {
+      return tasks;
+    }
+
+    return sortTasksByDueDate(tasks, dueDateSort);
+  }, [dueDateSort, tasks]);
 
   if (!tasks.length) {
     return (
@@ -51,12 +61,28 @@ export function TaskTable({
               <th className="px-6 py-4 font-medium">Status</th>
               <th className="px-6 py-4 font-medium">Priority</th>
               <th className="px-6 py-4 font-medium">Assignee</th>
-              <th className="px-6 py-4 font-medium">Due date</th>
+              <th className="px-6 py-4 font-medium" aria-sort={dueDateSort === "asc" ? "ascending" : dueDateSort === "desc" ? "descending" : "none"}>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1 text-inherit transition hover:text-slate-700 focus:outline-none focus:text-slate-700"
+                  onClick={() => setDueDateSort((current) => (current === "asc" ? "desc" : "asc"))}
+                  title={dueDateSort === "asc" ? "Sort due date descending" : "Sort due date ascending"}
+                >
+                  <span>Due date</span>
+                  {dueDateSort === "asc" ? (
+                    <ArrowUp className="h-4 w-4" />
+                  ) : dueDateSort === "desc" ? (
+                    <ArrowDown className="h-4 w-4" />
+                  ) : (
+                    <ArrowUpDown className="h-4 w-4" />
+                  )}
+                </button>
+              </th>
               <th className="px-6 py-4 font-medium">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {tasks.map((task) => {
+            {visibleTasks.map((task) => {
               const dependencyNames = resolveTaskDependencyNames(task, allTasks);
 
               return (

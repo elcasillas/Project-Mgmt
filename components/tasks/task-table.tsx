@@ -3,9 +3,9 @@
 import { useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown, Trash } from "lucide-react";
 import { deleteTaskAction } from "@/lib/actions/workspace";
+import { ConfirmActionButton } from "@/components/shared/confirm-action-button";
 import { TaskFormModal } from "@/components/tasks/task-form-modal";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils/format";
 import { sortTasksByDueDate, type DueDateSortDirection } from "@/lib/utils/task-sorting";
@@ -134,18 +134,17 @@ export function TaskTable({
                           triggerClassName={taskActionButtonClassName}
                           redirectPath={redirectPath}
                         />
-                        <form action={deleteTaskAction}>
-                          <input type="hidden" name="task_id" value={task.id} />
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className={taskDeleteButtonClassName}
-                            aria-label="Delete Task"
-                            title="Delete Task"
-                          >
-                            <Trash className="h-4 w-4" />
-                          </Button>
-                        </form>
+                        <ConfirmActionButton
+                          action={deleteTaskAction}
+                          fields={[{ name: "task_id", value: task.id }]}
+                          variant="ghost"
+                          size="sm"
+                          className={taskDeleteButtonClassName}
+                          aria-label="Delete Task"
+                          title="Delete Task"
+                        >
+                          <Trash className="h-4 w-4" />
+                        </ConfirmActionButton>
                       </div>
                     ) : (
                       <span className="text-slate-500">No actions</span>

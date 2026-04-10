@@ -4,12 +4,14 @@ import { Pencil } from "lucide-react";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
+import { ConfirmationDialog } from "@/components/shared/confirmation-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { FormField } from "@/components/shared/form-field";
+import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 import { TASK_PRIORITIES, TASK_STATUSES } from "@/lib/data/constants";
 import { saveTaskAction } from "@/lib/actions/workspace";
 import type { Profile, Project, Task } from "@/lib/types/domain";
@@ -53,6 +55,11 @@ export function TaskFormModal({
   const [selectedDependencyIds, setSelectedDependencyIds] = useState<string[]>(task?.dependency_ids ?? []);
   const [dependencyQuery, setDependencyQuery] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
+  const { confirmOpen, requestClose, confirmLeave, stay, markClean } = useUnsavedChangesGuard({
+    formRef,
+    open,
+    onDiscard: () => setOpen(false)
+  });
   const selectedProject = projects.find((projectOption) => projectOption.id === selectedProjectId);
   const availableDependencyTasks = availableTasks.filter(
     (candidateTask) => candidateTask.project_id === selectedProjectId && candidateTask.id !== task?.id
@@ -113,7 +120,7 @@ export function TaskFormModal({
       </Button>
       <Modal
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={requestClose}
         title={task ? "Edit task" : "Create task"}
         description="Set ownership, timing, dependencies, and project linkage."
       >
@@ -290,7 +297,7 @@ export function TaskFormModal({
             </FormField>
           </div>
           <div className="md:col-span-2 flex justify-end gap-3">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+            <Button type="button" variant="ghost" onClick={requestClose}>
               Cancel
             </Button>
             <Button
@@ -309,6 +316,7 @@ export function TaskFormModal({
                     setError(result?.message || "Unable to save task.");
                     return;
                   }
+                  markClean();
                   setOpen(false);
                   if (redirectPath) {
                     router.push(`${redirectPath}?success=${encodeURIComponent(result.message)}` as Route);
@@ -322,6 +330,16 @@ export function TaskFormModal({
           </div>
         </form>
       </Modal>
+      <ConfirmationDialog
+        open={confirmOpen}
+        title="Unsaved Changes"
+        description="You have unsaved changes. Do you want to leave without saving?"
+        confirmLabel="Leave Without Saving"
+        cancelLabel="Stay"
+        confirmVariant="primary"
+        onConfirm={confirmLeave}
+        onCancel={stay}
+      />
     </>
   );
 }

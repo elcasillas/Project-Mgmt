@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { addDays, eachDayOfInterval, endOfMonth, format, startOfMonth } from "date-fns";
 import { addCommentAction, deleteAttachmentAction } from "@/lib/actions/workspace";
+import { ConfirmActionButton } from "@/components/shared/confirm-action-button";
 import { AttachmentUploader } from "@/components/shared/attachment-uploader";
 import { TaskFormModal } from "@/components/tasks/task-form-modal";
 import { TasksBoard } from "@/components/tasks/tasks-board";
@@ -236,14 +237,18 @@ export function TasksView({
                       <a href={attachment.file_url} target="_blank" rel="noreferrer" className="text-sm font-medium text-sky-600">
                         Open
                       </a>
-                      <form action={deleteAttachmentAction}>
-                        <input type="hidden" name="attachment_id" value={attachment.id} />
-                        <input type="hidden" name="file_path" value={attachment.file_path} />
-                        <input type="hidden" name="project_id" value={activeTask.project_id ?? ""} />
-                        <Button variant="ghost" size="sm">
-                          Delete
-                        </Button>
-                      </form>
+                      <ConfirmActionButton
+                        action={deleteAttachmentAction}
+                        fields={[
+                          { name: "attachment_id", value: attachment.id },
+                          { name: "file_path", value: attachment.file_path },
+                          { name: "project_id", value: activeTask.project_id ?? "" }
+                        ]}
+                        variant="ghost"
+                        size="sm"
+                      >
+                        Delete
+                      </ConfirmActionButton>
                     </div>
                   </div>
                 </div>

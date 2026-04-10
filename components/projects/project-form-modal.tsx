@@ -4,12 +4,14 @@ import { Pencil } from "lucide-react";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
+import { ConfirmationDialog } from "@/components/shared/confirmation-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { FormField } from "@/components/shared/form-field";
+import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 import { PROJECT_PRIORITIES, PROJECT_STATUSES } from "@/lib/data/constants";
 import { saveProjectAction } from "@/lib/actions/workspace";
 import type { Profile, Project } from "@/lib/types/domain";
@@ -34,6 +36,11 @@ export function ProjectFormModal({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const { confirmOpen, requestClose, confirmLeave, stay, markClean } = useUnsavedChangesGuard({
+    formRef,
+    open,
+    onDiscard: () => setOpen(false)
+  });
 
   return (
     <>
@@ -52,7 +59,7 @@ export function ProjectFormModal({
       </Button>
       <Modal
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={requestClose}
         title={project ? "Edit project" : "Create project"}
         description="Capture scope, ownership, delivery dates, and team coverage."
       >
@@ -122,7 +129,7 @@ export function ProjectFormModal({
             </FormField>
           </div>
           <div className="md:col-span-2 flex justify-end gap-3">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+            <Button type="button" variant="ghost" onClick={requestClose}>
               Cancel
             </Button>
             <Button
@@ -141,6 +148,7 @@ export function ProjectFormModal({
                     setError(result?.message || "Unable to save project.");
                     return;
                   }
+                  markClean();
                   setOpen(false);
                   router.push(`/projects?success=${encodeURIComponent(result.message)}` as Route);
                   router.refresh();
@@ -152,6 +160,16 @@ export function ProjectFormModal({
           </div>
         </form>
       </Modal>
+      <ConfirmationDialog
+        open={confirmOpen}
+        title="Unsaved Changes"
+        description="You have unsaved changes. Do you want to leave without saving?"
+        confirmLabel="Leave Without Saving"
+        cancelLabel="Stay"
+        confirmVariant="primary"
+        onConfirm={confirmLeave}
+        onCancel={stay}
+      />
     </>
   );
 }

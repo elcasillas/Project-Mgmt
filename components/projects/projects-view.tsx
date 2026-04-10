@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Archive } from "lucide-react";
 import { archiveProjectAction } from "@/lib/actions/workspace";
+import { ConfirmActionButton } from "@/components/shared/confirm-action-button";
 import { ProjectFormModal } from "@/components/projects/project-form-modal";
 import { AvatarGroup } from "@/components/ui/avatar-group";
 import { Badge } from "@/components/ui/badge";
@@ -120,13 +121,15 @@ export function ProjectsView({
                   />
                 ) : null}
                 {canManageProjects ? (
-                  <form action={archiveProjectAction}>
-                    <input type="hidden" name="project_id" value={project.id} />
-                    <Button variant="ghost" size="sm">
-                      <Archive className="mr-2 h-4 w-4" />
-                      Archive
-                    </Button>
-                  </form>
+                  <ConfirmActionButton
+                    action={archiveProjectAction}
+                    fields={[{ name: "project_id", value: project.id }]}
+                    variant="ghost"
+                    size="sm"
+                  >
+                    <Archive className="mr-2 h-4 w-4" />
+                    Archive
+                  </ConfirmActionButton>
                 ) : null}
               </div>
             </Card>

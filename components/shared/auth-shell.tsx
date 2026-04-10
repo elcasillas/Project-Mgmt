@@ -24,8 +24,10 @@ export function AuthShell({
         </div>
         <div className="grid grid-cols-1 justify-center">
           <div className="mx-auto w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-5">
-            <p className="text-sm text-slate-300">Projects at risk surfaced early</p>
-            <p className="mt-2 text-3xl font-semibold">7-day runway</p>
+            <p className="text-base leading-7 text-slate-200">
+              Transforming undervalued homes into high-quality, modern living spaces that elevate neighborhoods and
+              deliver lasting value to homeowners and communities.
+            </p>
           </div>
         </div>
       </div>

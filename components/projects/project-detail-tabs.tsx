@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { addCommentAction, deleteAttachmentAction } from "@/lib/actions/workspace";
 import { AttachmentUploader } from "@/components/shared/attachment-uploader";
 import { TaskFormModal } from "@/components/tasks/task-form-modal";
+import { TaskTable } from "@/components/tasks/task-table";
 import { AvatarGroup } from "@/components/ui/avatar-group";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,8 +12,8 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { canManageTasks } from "@/lib/utils/permissions";
-import { resolveTaskDependencyNames } from "@/lib/utils/task-dependencies";
 import { formatDate, formatRelative } from "@/lib/utils/format";
+import { resolveTaskDependencyNames } from "@/lib/utils/task-dependencies";
 import type { Attachment, Comment, Project, Task, ActivityLog, Profile, UserRole } from "@/lib/types/domain";
 
 type Tab = "Overview" | "Tasks" | "Team" | "Activity" | "Files";
@@ -58,11 +59,12 @@ export function ProjectDetailTabs({
             initialProjectId={project.id}
             lockProjectSelection
             redirectPath={`/projects/${project.id}`}
-            triggerLabel="+ New Task"
+            triggerLabel="New Task"
             triggerAriaLabel="Create Task"
             triggerTitle="Create Task"
             triggerSize="sm"
-            triggerClassName="ml-auto rounded-xl border-0 bg-[#00ADB1] px-4 text-white hover:bg-[#01979b] focus:ring-[#00ADB1]"
+            triggerVariant="secondary"
+            triggerClassName="ml-auto"
           />
         ) : null}
       </div>
@@ -134,52 +136,13 @@ export function ProjectDetailTabs({
       ) : null}
 
       {tab === "Tasks" ? (
-        <Card className="space-y-4">
-          {tasks.map((task) => {
-            const dependencyNames = resolveTaskDependencyNames(task, tasks);
-
-            return (
-            <div key={task.id} className="flex flex-col gap-3 rounded-2xl border border-slate-100 p-4 lg:flex-row lg:items-start lg:justify-between">
-              <div className="min-w-0 flex-1">
-                <p className="font-medium text-slate-900">{task.title}</p>
-                <p className="mt-1 text-sm text-slate-500">{task.description}</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {dependencyNames.length ? (
-                    dependencyNames.map((dependencyName) => (
-                      <span
-                        key={`${task.id}:${dependencyName}`}
-                        title={dependencyName}
-                        className="max-w-full truncate rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-slate-600"
-                      >
-                        {dependencyName}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-sm text-slate-500">Dependencies: None</span>
-                  )}
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-                <Badge value={task.status} />
-                <Badge value={task.priority} />
-                {canEditTasks ? (
-                  <TaskFormModal
-                    profiles={profiles}
-                    projects={projects}
-                    availableTasks={tasks}
-                    task={task}
-                    triggerLabel="Edit"
-                    triggerAriaLabel="Edit Task"
-                    triggerTitle="Edit Task"
-                    triggerIconOnly
-                    triggerVariant="secondary"
-                    triggerSize="sm"
-                  />
-                ) : null}
-              </div>
-            </div>
-          )})}
-        </Card>
+        <TaskTable
+          tasks={tasks}
+          profiles={profiles}
+          projects={projects}
+          canEditTasks={canEditTasks}
+          redirectPath={`/projects/${project.id}`}
+        />
       ) : null}
 
       {tab === "Team" ? (

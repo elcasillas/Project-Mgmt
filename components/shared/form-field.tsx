@@ -10,10 +10,12 @@ export function FormField({
   children: React.ReactNode;
 }) {
   return (
-    <label htmlFor={htmlFor} className="block space-y-2">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
+    <div className="block space-y-2">
+      <label htmlFor={htmlFor} className="block text-sm font-medium text-slate-700">
+        {label}
+      </label>
       {children}
       {hint ? <span className="block text-xs text-slate-500">{hint}</span> : null}
-    </label>
+    </div>
   );
 }

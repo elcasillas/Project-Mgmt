@@ -1,5 +1,6 @@
 "use client";
 
+import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -111,7 +112,7 @@ export function useUnsavedChangesGuard({
       }
 
       const anchor = target.closest("a[href]");
-      if (!anchor) {
+      if (!(anchor instanceof HTMLAnchorElement)) {
         return;
       }
 
@@ -128,7 +129,7 @@ export function useUnsavedChangesGuard({
       event.preventDefault();
       requestLeave(() => {
         markClean();
-        router.push(destination.pathname + destination.search + destination.hash);
+        router.push((destination.pathname + destination.search + destination.hash) as Route);
       });
     };
 

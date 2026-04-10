@@ -42,12 +42,29 @@ export function ProjectDetailTabs({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap gap-2">
-        {(["Overview", "Tasks", "Team", "Activity", "Files"] as Tab[]).map((item) => (
-          <Button key={item} variant={tab === item ? "primary" : "secondary"} size="sm" onClick={() => setTab(item)}>
-            {item}
-          </Button>
-        ))}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          {(["Overview", "Tasks", "Team", "Activity", "Files"] as Tab[]).map((item) => (
+            <Button key={item} variant={tab === item ? "primary" : "secondary"} size="sm" onClick={() => setTab(item)}>
+              {item}
+            </Button>
+          ))}
+        </div>
+        {canEditTasks ? (
+          <TaskFormModal
+            profiles={profiles}
+            projects={projects}
+            availableTasks={tasks}
+            initialProjectId={project.id}
+            lockProjectSelection
+            redirectPath={`/projects/${project.id}`}
+            triggerLabel="+ New Task"
+            triggerAriaLabel="Create Task"
+            triggerTitle="Create Task"
+            triggerSize="sm"
+            triggerClassName="ml-auto rounded-xl border-0 bg-[#00ADB1] px-4 text-white hover:bg-[#01979b] focus:ring-[#00ADB1]"
+          />
+        ) : null}
       </div>
 
       {tab === "Overview" ? (

@@ -19,34 +19,41 @@ export function TaskFormModal({
   projects,
   task,
   availableTasks = [],
+  initialProjectId,
+  lockProjectSelection = false,
   triggerLabel = "New Task",
   triggerAriaLabel,
   triggerTitle,
   triggerIconOnly = false,
   triggerVariant,
   triggerSize,
+  triggerClassName,
   redirectPath
 }: {
   profiles: Profile[];
   projects: Project[];
   task?: Task;
   availableTasks?: Task[];
+  initialProjectId?: string;
+  lockProjectSelection?: boolean;
   triggerLabel?: string;
   triggerAriaLabel?: string;
   triggerTitle?: string;
   triggerIconOnly?: boolean;
   triggerVariant?: "primary" | "secondary" | "ghost" | "danger";
   triggerSize?: "sm" | "md";
+  triggerClassName?: string;
   redirectPath?: string;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [selectedProjectId, setSelectedProjectId] = useState(task?.project_id ?? "");
+  const [selectedProjectId, setSelectedProjectId] = useState(task?.project_id ?? initialProjectId ?? "");
   const [selectedDependencyIds, setSelectedDependencyIds] = useState<string[]>(task?.dependency_ids ?? []);
   const [dependencyQuery, setDependencyQuery] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
+  const selectedProject = projects.find((projectOption) => projectOption.id === selectedProjectId);
   const availableDependencyTasks = availableTasks.filter(
     (candidateTask) => candidateTask.project_id === selectedProjectId && candidateTask.id !== task?.id
   );
@@ -68,11 +75,11 @@ export function TaskFormModal({
       return;
     }
 
-    setSelectedProjectId(task?.project_id ?? "");
+    setSelectedProjectId(task?.project_id ?? initialProjectId ?? "");
     setSelectedDependencyIds(task?.dependency_ids ?? []);
     setDependencyQuery("");
     setError(null);
-  }, [open, task]);
+  }, [initialProjectId, open, task]);
 
   useEffect(() => {
     if (!selectedProjectId) {
@@ -96,8 +103,8 @@ export function TaskFormModal({
         size={triggerSize ?? "md"}
         className={
           triggerIconOnly
-            ? "h-9 w-9 rounded-md border border-gray-200 bg-transparent p-0 text-slate-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#00ADB1]"
-            : undefined
+            ? `h-9 w-9 rounded-md border border-gray-200 bg-transparent p-0 text-slate-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#00ADB1] ${triggerClassName ?? ""}`
+            : triggerClassName
         }
         aria-label={triggerAriaLabel ?? triggerLabel}
         title={triggerTitle ?? triggerAriaLabel ?? triggerLabel}
@@ -123,20 +130,29 @@ export function TaskFormModal({
             <Input name="title" defaultValue={task?.title} required />
           </FormField>
           <FormField label="Project">
-            <Select
-              name="project_id"
-              value={selectedProjectId}
-              onChange={(event) => {
-                setSelectedProjectId(event.target.value);
-              }}
-            >
-              <option value="">No project</option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </Select>
+            {lockProjectSelection ? (
+              <>
+                <input type="hidden" name="project_id" value={selectedProjectId} />
+                <div className="flex min-h-11 items-center rounded-[11px] border border-[rgba(29,29,31,0.08)] bg-[#fafafc] px-4 text-[15px] text-slate-700">
+                  {selectedProject?.name ?? "Current project"}
+                </div>
+              </>
+            ) : (
+              <Select
+                name="project_id"
+                value={selectedProjectId}
+                onChange={(event) => {
+                  setSelectedProjectId(event.target.value);
+                }}
+              >
+                <option value="">No project</option>
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </Select>
+            )}
           </FormField>
           <div className="md:col-span-2">
             <FormField label="Description">

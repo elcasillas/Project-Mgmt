@@ -20,7 +20,6 @@ import { AttachmentUploader } from "@/components/shared/attachment-uploader";
 import { TaskFormModal } from "@/components/tasks/task-form-modal";
 import { TasksBoard } from "@/components/tasks/tasks-board";
 import { TaskTable } from "@/components/tasks/task-table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -237,14 +236,18 @@ export function TasksView({
       {selectedTask ? (
         <div className="grid gap-6 xl:grid-cols-[1.15fr_1fr]">
           <Card className="space-y-5">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 className="text-lg font-semibold text-slate-950">{selectedTask.title}</h2>
-                <p className="mt-2 text-sm text-slate-500">{selectedTask.description || "No description provided."}</p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Badge value={selectedTask.status} />
-                <Badge value={selectedTask.priority} />
+            <div>
+              <h2 className="text-lg font-semibold text-slate-950">{selectedTask.title}</h2>
+              <p className="mt-2 text-sm text-slate-500">{selectedTask.description || "No description provided."}</p>
+              <div className="mt-4 space-y-2 text-sm">
+                <p className="text-slate-700">
+                  <span className="font-semibold text-slate-950">Status:</span>{" "}
+                  <span>{selectedTask.status}</span>
+                </p>
+                <p className="text-slate-700">
+                  <span className="font-semibold text-slate-950">Priority:</span>{" "}
+                  <span>{selectedTask.priority}</span>
+                </p>
               </div>
             </div>
             <div className="grid gap-4 md:grid-cols-2">

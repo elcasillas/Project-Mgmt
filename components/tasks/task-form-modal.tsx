@@ -157,14 +157,16 @@ export function TaskFormModal({
         {error ? <p className="mb-4 rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p> : null}
         {modalMode === "view" && task ? (
           <div className="space-y-5">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h3 className="text-lg font-semibold text-slate-950">{task.title}</h3>
-                <p className="mt-2 text-sm text-slate-500">{task.description || "No description provided."}</p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">{task.status}</span>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">{task.priority}</span>
+            <div>
+              <h3 className="text-lg font-semibold text-slate-950">{task.title}</h3>
+              <p className="mt-2 text-sm text-slate-500">{task.description || "No description provided."}</p>
+              <div className="mt-4 space-y-2 text-sm">
+                <p className="text-slate-700">
+                  <span className="font-semibold text-slate-950">Status:</span> <span>{task.status}</span>
+                </p>
+                <p className="text-slate-700">
+                  <span className="font-semibold text-slate-950">Priority:</span> <span>{task.priority}</span>
+                </p>
               </div>
             </div>
             <div className="grid gap-4 md:grid-cols-2">

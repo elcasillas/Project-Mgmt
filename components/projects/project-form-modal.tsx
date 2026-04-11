@@ -3,7 +3,7 @@
 import { Pencil } from "lucide-react";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { ConfirmationDialog } from "@/components/shared/confirmation-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,10 @@ import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 import { PROJECT_PRIORITIES, PROJECT_STATUSES } from "@/lib/data/constants";
 import { saveProjectAction } from "@/lib/actions/workspace";
 import type { Profile, Project } from "@/lib/types/domain";
+
+function getMemberLabel(profile: Profile) {
+  return profile.full_name?.trim() || profile.email?.trim() || profile.id;
+}
 
 export function ProjectFormModal({
   profiles,
@@ -35,12 +39,22 @@ export function ProjectFormModal({
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>(project?.members?.map((member) => member.id) ?? []);
   const formRef = useRef<HTMLFormElement>(null);
   const { confirmOpen, requestClose, confirmLeave, stay, markClean } = useUnsavedChangesGuard({
     formRef,
     open,
     onDiscard: () => setOpen(false)
   });
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    setSelectedMemberIds(project?.members?.map((member) => member.id) ?? []);
+    setError(null);
+  }, [open, project]);
 
   return (
     <>
@@ -79,7 +93,7 @@ export function ProjectFormModal({
             <Select id="owner-id" name="owner_id" defaultValue={project?.owner_id}>
               {profiles.map((profile) => (
                 <option key={profile.id} value={profile.id}>
-                  {profile.full_name}
+                  {getMemberLabel(profile)}
                 </option>
               ))}
             </Select>
@@ -114,8 +128,55 @@ export function ProjectFormModal({
             <Input id="target-end-date" name="target_end_date" type="date" defaultValue={project?.target_end_date ?? ""} />
           </FormField>
           <div className="md:col-span-2">
-            <FormField label="Team member ids" hint="Comma-separated UUIDs for initial project membership.">
-              <Input name="team_members" defaultValue={project?.members?.map((member) => member.id).join(", ")} />
+            <FormField
+              label="Team members"
+              hint={
+                profiles.length ? "Select one or more team members assigned to this project." : "No team members available"
+              }
+            >
+              <input type="hidden" name="team_members" value={selectedMemberIds.join(",")} />
+              {profiles.length ? (
+                <div className="grid gap-2 rounded-[11px] border border-[rgba(29,29,31,0.08)] bg-[#fafafc] p-4 md:grid-cols-2">
+                  {profiles.map((profile) => {
+                    const label = getMemberLabel(profile);
+                    const isSelected = selectedMemberIds.includes(profile.id);
+
+                    return (
+                      <label
+                        key={profile.id}
+                        className={`flex cursor-pointer items-start gap-3 rounded-2xl border px-4 py-3 transition ${
+                          isSelected
+                            ? "border-[#0071e3] bg-[#e8f3ff]"
+                            : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          name="team_member_selection"
+                          value={profile.id}
+                          checked={isSelected}
+                          onChange={(event) => {
+                            setSelectedMemberIds((current) =>
+                              event.target.checked
+                                ? [...current, profile.id]
+                                : current.filter((memberId) => memberId !== profile.id)
+                            );
+                          }}
+                          className="mt-1 h-4 w-4 rounded border-gray-300 text-[#0071e3] focus:ring-[#0071e3]"
+                        />
+                        <span className="min-w-0">
+                          <span className="block text-sm font-medium text-slate-900">{label}</span>
+                          <span className="mt-1 block text-xs text-slate-500">{profile.role}</span>
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="rounded-[11px] border border-dashed border-[rgba(29,29,31,0.12)] bg-[#fafafc] px-4 py-3 text-sm text-slate-500">
+                  No team members available
+                </div>
+              )}
             </FormField>
           </div>
           <div className="md:col-span-2">

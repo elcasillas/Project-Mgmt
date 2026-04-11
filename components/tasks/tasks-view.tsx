@@ -91,8 +91,7 @@ export function TasksView({
   const weekdayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   const selectedTask = tasks.find((task) => task.id === selectedTaskId);
-  const activeTask = selectedTask ?? filteredTasks[0];
-  const taskAttachments = attachments.filter((attachment) => attachment.task_id === activeTask?.id);
+  const taskAttachments = attachments.filter((attachment) => attachment.task_id === selectedTask?.id);
 
   return (
     <div className="space-y-6">
@@ -235,36 +234,36 @@ export function TasksView({
         </Card>
       ) : null}
 
-      {activeTask ? (
+      {selectedTask ? (
         <div className="grid gap-6 xl:grid-cols-[1.15fr_1fr]">
           <Card className="space-y-5">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-lg font-semibold text-slate-950">{activeTask.title}</h2>
-                <p className="mt-2 text-sm text-slate-500">{activeTask.description || "No description provided."}</p>
+                <h2 className="text-lg font-semibold text-slate-950">{selectedTask.title}</h2>
+                <p className="mt-2 text-sm text-slate-500">{selectedTask.description || "No description provided."}</p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Badge value={activeTask.status} />
-                <Badge value={activeTask.priority} />
+                <Badge value={selectedTask.status} />
+                <Badge value={selectedTask.priority} />
               </div>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="rounded-2xl bg-slate-50 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Project</p>
-                <p className="mt-2 font-medium text-slate-900">{activeTask.project?.name ?? "General task"}</p>
+                <p className="mt-2 font-medium text-slate-900">{selectedTask.project?.name ?? "General task"}</p>
               </div>
               <div className="rounded-2xl bg-slate-50 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Assignee</p>
-                <p className="mt-2 font-medium text-slate-900">{activeTask.assignee?.full_name ?? "Unassigned"}</p>
+                <p className="mt-2 font-medium text-slate-900">{selectedTask.assignee?.full_name ?? "Unassigned"}</p>
               </div>
               <div className="rounded-2xl bg-slate-50 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Due date</p>
-                <p className="mt-2 font-medium text-slate-900">{formatDate(activeTask.due_date)}</p>
+                <p className="mt-2 font-medium text-slate-900">{formatDate(selectedTask.due_date)}</p>
               </div>
               <div className="rounded-2xl bg-slate-50 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Hours</p>
                 <p className="mt-2 font-medium text-slate-900">
-                  {activeTask.actual_hours ?? 0} / {activeTask.estimated_hours ?? 0}
+                  {selectedTask.actual_hours ?? 0} / {selectedTask.estimated_hours ?? 0}
                 </p>
               </div>
             </div>
@@ -291,7 +290,7 @@ export function TasksView({
                         fields={[
                           { name: "attachment_id", value: attachment.id },
                           { name: "file_path", value: attachment.file_path },
-                          { name: "project_id", value: activeTask.project_id ?? "" }
+                          { name: "project_id", value: selectedTask.project_id ?? "" }
                         ]}
                         variant="ghost"
                         size="sm"
@@ -303,7 +302,7 @@ export function TasksView({
                 </div>
               ))}
             </div>
-            <AttachmentUploader taskId={activeTask.id} />
+            <AttachmentUploader taskId={selectedTask.id} />
           </Card>
         </div>
       ) : null}

@@ -10,7 +10,7 @@ export default async function TasksPage({
 }) {
   const params = await searchParams;
   const [tasks, projects, teamMembers] = await Promise.all([getTasks(), getProjects(), getTeamMembers()]);
-  const attachments = await getTaskAttachments(tasks.map((task) => task.id));
+  const attachments = await getTaskAttachments(params.task ? [params.task] : []);
   const profiles = teamMembers.map(({ activeProjects, assignedTasks, workloadSummary, ...profile }) => profile);
 
   return (

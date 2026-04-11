@@ -216,10 +216,26 @@ export function TasksView({
                           </div>
                           <div className="mt-3 space-y-2">
                             {dayTasks.map((task) => (
-                              <div key={task.id} className="rounded-xl border border-gray-200 bg-slate-50 p-3">
-                                <p className="text-sm font-medium text-slate-900">{task.title}</p>
-                                <p className="mt-1 text-xs text-slate-500">{task.project?.name ?? "General task"}</p>
-                              </div>
+                              <TaskFormModal
+                                key={task.id}
+                                profiles={profiles}
+                                projects={projects}
+                                availableTasks={tasks}
+                                task={task}
+                                initialMode="view"
+                                redirectPath="/tasks"
+                                triggerVariant="ghost"
+                                triggerSize="sm"
+                                triggerAriaLabel={`View task ${task.title}`}
+                                triggerTitle={`View task ${task.title}`}
+                                triggerClassName="h-auto w-full flex-col items-start rounded-xl border border-gray-200 bg-slate-50 p-3 text-left text-slate-900 hover:border-gray-300 hover:bg-white"
+                                triggerLabel={
+                                  <>
+                                    <span className="text-sm font-medium text-slate-900">{task.title}</span>
+                                    <span className="mt-1 text-xs text-slate-500">{task.project?.name ?? "General task"}</span>
+                                  </>
+                                }
+                              />
                             ))}
                           </div>
                         </div>

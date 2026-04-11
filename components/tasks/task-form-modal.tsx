@@ -43,7 +43,7 @@ export function TaskFormModal({
   availableTasks?: Task[];
   initialProjectId?: string;
   lockProjectSelection?: boolean;
-  triggerLabel?: string;
+  triggerLabel?: React.ReactNode;
   triggerAriaLabel?: string;
   triggerTitle?: string;
   triggerIconOnly?: boolean;
@@ -62,6 +62,7 @@ export function TaskFormModal({
   const [selectedProjectId, setSelectedProjectId] = useState(task?.project_id ?? initialProjectId ?? "");
   const [selectedDependencyIds, setSelectedDependencyIds] = useState<string[]>(task?.dependency_ids ?? []);
   const [dependencyQuery, setDependencyQuery] = useState("");
+  const defaultTriggerText = typeof triggerLabel === "string" ? triggerLabel : undefined;
   const formRef = useRef<HTMLFormElement>(null);
   const { confirmOpen, requestClose, confirmLeave, stay, markClean } = useUnsavedChangesGuard({
     formRef,
@@ -126,8 +127,8 @@ export function TaskFormModal({
             ? `h-9 w-9 rounded-md border border-gray-200 bg-transparent p-0 text-slate-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#00ADB1] ${triggerClassName ?? ""}`
             : triggerClassName
         }
-        aria-label={triggerAriaLabel ?? triggerLabel}
-        title={triggerTitle ?? triggerAriaLabel ?? triggerLabel}
+        aria-label={triggerAriaLabel ?? defaultTriggerText}
+        title={triggerTitle ?? triggerAriaLabel ?? defaultTriggerText}
       >
         {triggerIconOnly ? (defaultMode === "view" ? <Eye className="h-4 w-4" /> : <Pencil className="h-4 w-4" />) : triggerLabel}
       </Button>

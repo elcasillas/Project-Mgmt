@@ -31,6 +31,8 @@ export function ProjectsView({
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [priority, setPriority] = useState("All");
+  const projectActionButtonClassName =
+    "h-9 w-9 rounded-md border border-gray-200 bg-transparent p-0 text-slate-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#00ADB1]";
 
   const filteredProjects = useMemo(() => {
     return projects.filter((project) => {
@@ -118,6 +120,7 @@ export function ProjectsView({
                     triggerAriaLabel="Edit Project"
                     triggerTitle="Edit Project"
                     triggerIconOnly
+                    triggerSize="sm"
                   />
                 ) : null}
                 {canManageProjects ? (
@@ -126,9 +129,11 @@ export function ProjectsView({
                     fields={[{ name: "project_id", value: project.id }]}
                     variant="ghost"
                     size="sm"
+                    className={projectActionButtonClassName}
+                    aria-label="Archive Project"
+                    title="Archive Project"
                   >
-                    <Archive className="mr-2 h-4 w-4" />
-                    Archive
+                    <Archive className="h-4 w-4" />
                   </ConfirmActionButton>
                 ) : null}
               </div>
@@ -169,16 +174,32 @@ export function ProjectsView({
                     </td>
                     <td className="px-6 py-4 text-slate-600">{formatDate(project.target_end_date)}</td>
                     <td className="px-6 py-4">
-                      {canManageProjects ? (
-                        <ProjectFormModal
-                          profiles={profiles}
-                          project={project}
-                          triggerLabel="Edit"
-                          triggerAriaLabel="Edit Project"
-                          triggerTitle="Edit Project"
-                          triggerIconOnly
-                        />
-                      ) : null}
+                      <div className="flex gap-2">
+                        {canManageProjects ? (
+                          <ProjectFormModal
+                            profiles={profiles}
+                            project={project}
+                            triggerLabel="Edit"
+                            triggerAriaLabel="Edit Project"
+                            triggerTitle="Edit Project"
+                            triggerIconOnly
+                            triggerSize="sm"
+                          />
+                        ) : null}
+                        {canManageProjects ? (
+                          <ConfirmActionButton
+                            action={archiveProjectAction}
+                            fields={[{ name: "project_id", value: project.id }]}
+                            variant="ghost"
+                            size="sm"
+                            className={projectActionButtonClassName}
+                            aria-label="Archive Project"
+                            title="Archive Project"
+                          >
+                            <Archive className="h-4 w-4" />
+                          </ConfirmActionButton>
+                        ) : null}
+                      </div>
                     </td>
                   </tr>
                 ))}

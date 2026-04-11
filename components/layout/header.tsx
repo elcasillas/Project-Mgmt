@@ -9,6 +9,7 @@ import { logoutAction } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NAV_ITEMS } from "@/lib/data/constants";
+import { cn } from "@/lib/utils/cn";
 import {
   normalizeSearchQuery,
   projectMatchesDescription,
@@ -17,6 +18,10 @@ import {
   taskMatchesName
 } from "@/lib/utils/search";
 import type { Profile, Project, Task } from "@/lib/types/domain";
+
+const mobileNavLinkBaseClass = "rounded-full px-4 py-3 text-sm transition-colors";
+const mobileNavLinkInactiveClass = "text-gray-700 dark:text-gray-200 hover:text-black dark:hover:text-white";
+const mobileNavLinkActiveClass = "text-black dark:text-white font-semibold";
 
 function getDescriptionExcerpt(description: string | null | undefined, query: string) {
   const source = (description ?? "").trim();
@@ -263,15 +268,18 @@ export function Header({
         </form>
       </div>
       {mobileOpen ? (
-        <div className="space-y-3 border-t border-white/10 bg-black px-4 py-4 lg:hidden">
+        <div className="space-y-3 border-t border-slate-200 bg-white px-4 py-4 dark:border-gray-800 dark:bg-gray-900 lg:hidden">
           <nav className="grid gap-2">
             {NAV_ITEMS.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`rounded-full px-4 py-3 text-sm font-medium ${
-                  pathname.startsWith(item.href) ? "bg-white text-[#1d1d1f]" : "bg-white/6 text-white/72"
-                }`}
+                className={cn(
+                  mobileNavLinkBaseClass,
+                  pathname.startsWith(item.href)
+                    ? mobileNavLinkActiveClass
+                    : mobileNavLinkInactiveClass
+                )}
                 onClick={() => setMobileOpen(false)}
               >
                 {item.label}

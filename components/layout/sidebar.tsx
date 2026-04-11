@@ -17,6 +17,11 @@ const icons = {
   Settings: Settings
 };
 
+const navLinkBaseClass =
+  "flex items-center gap-3 rounded-full px-4 py-3 text-[14px] tracking-[-0.01em] transition-colors";
+const navLinkInactiveClass = "text-white/85 hover:bg-white/10 hover:text-white dark:text-gray-200 dark:hover:text-white";
+const navLinkActiveClass = "bg-white text-black font-semibold dark:bg-white dark:text-black";
+
 export function Sidebar() {
   const pathname = usePathname();
 
@@ -36,8 +41,8 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-full px-4 py-3 text-[14px] tracking-[-0.01em] transition",
-                active ? "bg-white text-[#1d1d1f]" : "text-white/70 hover:bg-white/8 hover:text-white"
+                navLinkBaseClass,
+                active ? navLinkActiveClass : navLinkInactiveClass
               )}
             >
               <Icon className="h-4 w-4" />

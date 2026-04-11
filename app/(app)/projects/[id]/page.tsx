@@ -28,12 +28,11 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       <PageHeader eyebrow="Project Detail" title={detail.project.name} />
       <Card className="space-y-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-3">
+          <div>
             <div className="flex flex-wrap gap-2">
               <Badge value={detail.project.status} />
               <Badge value={detail.project.priority} />
             </div>
-            <p className="max-w-3xl text-sm text-slate-600">{detail.project.description}</p>
           </div>
           <div className="min-w-[220px] space-y-3">
             <p className="text-sm text-slate-500">Target end date</p>

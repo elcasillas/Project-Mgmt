@@ -466,10 +466,7 @@ export function TaskFormModal({
               </FormField>
             </section>
 
-            <div className="flex flex-col gap-3 rounded-[12px] bg-white p-5 shadow-[rgba(0,0,0,0.08)_0px_12px_32px] sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-[14px] leading-[1.43] tracking-[-0.01em] text-[rgba(29,29,31,0.56)]">
-                Review the task once before saving. Changes take effect immediately for the workspace.
-              </p>
+            <div className="flex justify-end rounded-[12px] bg-white p-5 shadow-[rgba(0,0,0,0.08)_0px_12px_32px]">
               <div className="flex justify-end gap-3">
                 <Button type="button" variant="ghost" onClick={requestClose}>
                   Cancel
@@ -499,7 +496,7 @@ export function TaskFormModal({
                     });
                   }}
                 >
-                  {isPending ? "Saving..." : task ? "Save changes" : "Create task"}
+                  {isPending ? "Saving..." : task ? "Save" : "Create task"}
                 </Button>
               </div>
             </div>

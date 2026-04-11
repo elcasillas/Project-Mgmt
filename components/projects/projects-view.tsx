@@ -73,7 +73,7 @@ export function ProjectsView({
           <Button variant={view === "table" ? "primary" : "secondary"} size="sm" onClick={() => setView("table")}>
             Table
           </Button>
-          {canManageProjects ? <ProjectFormModal profiles={profiles} /> : null}
+          {canManageProjects ? <ProjectFormModal profiles={profiles} triggerSize="sm" /> : null}
         </div>
       </div>
 

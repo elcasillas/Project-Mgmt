@@ -26,7 +26,8 @@ export function ProjectFormModal({
   triggerLabel = "New Project",
   triggerAriaLabel,
   triggerTitle,
-  triggerIconOnly = false
+  triggerIconOnly = false,
+  triggerSize = "md"
 }: {
   profiles: Profile[];
   project?: Project;
@@ -34,6 +35,7 @@ export function ProjectFormModal({
   triggerAriaLabel?: string;
   triggerTitle?: string;
   triggerIconOnly?: boolean;
+  triggerSize?: "sm" | "md";
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -61,6 +63,7 @@ export function ProjectFormModal({
       <Button
         onClick={() => setOpen(true)}
         variant={project ? "secondary" : "primary"}
+        size={triggerSize}
         className={
           triggerIconOnly
             ? "h-9 w-9 rounded-md border border-gray-200 bg-transparent p-0 text-slate-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#00ADB1]"

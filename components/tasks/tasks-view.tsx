@@ -123,7 +123,7 @@ export function TasksView({
               {mode[0].toUpperCase() + mode.slice(1)}
             </Button>
           ))}
-          <TaskFormModal profiles={profiles} projects={projects} availableTasks={tasks} redirectPath="/tasks" />
+          <TaskFormModal profiles={profiles} projects={projects} availableTasks={tasks} redirectPath="/tasks" triggerSize="sm" />
         </div>
       </div>
 

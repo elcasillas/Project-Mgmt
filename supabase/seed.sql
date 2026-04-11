@@ -37,14 +37,6 @@ set full_name = excluded.full_name,
     status = excluded.status,
     last_active_at = excluded.last_active_at;
 
-insert into public.tags (id, name, color)
-values
-  ('aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'Customer', '#0ea5e9'),
-  ('aaaaaaa2-aaaa-aaaa-aaaa-aaaaaaaaaaa2', 'Backend', '#14b8a6'),
-  ('aaaaaaa3-aaaa-aaaa-aaaa-aaaaaaaaaaa3', 'Launch', '#f97316'),
-  ('aaaaaaa4-aaaa-aaaa-aaaa-aaaaaaaaaaa4', 'Design', '#8b5cf6')
-on conflict (id) do nothing;
-
 insert into public.projects (id, name, description, owner_id, status, priority, start_date, target_end_date, progress, notes)
 values
   ('44444444-4444-4444-4444-444444444441', 'Q2 Client Portal', 'Launch the new client-facing delivery and approvals portal for enterprise accounts.', '22222222-2222-2222-2222-222222222222', 'Active', 'Critical', current_date - interval '18 days', current_date + interval '21 days', 68, 'Weekly steering committee every Tuesday.'),
@@ -63,14 +55,6 @@ values
   ('44444444-4444-4444-4444-444444444443', '33333333-3333-3333-3333-333333333333')
 on conflict do nothing;
 
-insert into public.project_tags (project_id, tag_id)
-values
-  ('44444444-4444-4444-4444-444444444441', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1'),
-  ('44444444-4444-4444-4444-444444444441', 'aaaaaaa3-aaaa-aaaa-aaaa-aaaaaaaaaaa3'),
-  ('44444444-4444-4444-4444-444444444442', 'aaaaaaa2-aaaa-aaaa-aaaa-aaaaaaaaaaa2'),
-  ('44444444-4444-4444-4444-444444444443', 'aaaaaaa2-aaaa-aaaa-aaaa-aaaaaaaaaaa2')
-on conflict do nothing;
-
 insert into public.tasks (id, project_id, title, description, status, priority, assignee_id, reporter_id, start_date, due_date, estimated_hours, actual_hours)
 values
   ('55555555-5555-5555-5555-555555555551', '44444444-4444-4444-4444-444444444441', 'Finalize SSO rollout plan', 'Coordinate launch checklist with security and customer success.', 'In Progress', 'Urgent', '22222222-2222-2222-2222-222222222222', '11111111-1111-1111-1111-111111111111', current_date - interval '6 days', current_date + interval '3 days', 16, 9),
@@ -79,14 +63,6 @@ values
   ('55555555-5555-5555-5555-555555555554', '44444444-4444-4444-4444-444444444443', 'Close stale admin access', 'Remove unused elevated permissions across production systems.', 'Blocked', 'Urgent', '11111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', current_date - interval '14 days', current_date - interval '2 days', 8, 6),
   ('55555555-5555-5555-5555-555555555555', '44444444-4444-4444-4444-444444444443', 'Draft rollback checklist', 'Prepare release checklist for incident response and rollback.', 'Done', 'High', '33333333-3333-3333-3333-333333333333', '11111111-1111-1111-1111-111111111111', current_date - interval '12 days', current_date - interval '5 days', 6, 5)
 on conflict (id) do nothing;
-
-insert into public.task_tags (task_id, tag_id)
-values
-  ('55555555-5555-5555-5555-555555555551', 'aaaaaaa3-aaaa-aaaa-aaaa-aaaaaaaaaaa3'),
-  ('55555555-5555-5555-5555-555555555552', 'aaaaaaa4-aaaa-aaaa-aaaa-aaaaaaaaaaa4'),
-  ('55555555-5555-5555-5555-555555555553', 'aaaaaaa2-aaaa-aaaa-aaaa-aaaaaaaaaaa2'),
-  ('55555555-5555-5555-5555-555555555554', 'aaaaaaa2-aaaa-aaaa-aaaa-aaaaaaaaaaa2')
-on conflict do nothing;
 
 insert into public.task_dependencies (task_id, depends_on_task_id)
 values

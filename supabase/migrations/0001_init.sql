@@ -108,27 +108,6 @@ create table if not exists public.activity_logs (
   created_at timestamptz not null default timezone('utc', now())
 );
 
-create table if not exists public.tags (
-  id uuid primary key default gen_random_uuid(),
-  name text not null unique,
-  color text not null default '#0ea5e9',
-  created_at timestamptz not null default timezone('utc', now())
-);
-
-create table if not exists public.project_tags (
-  id uuid primary key default gen_random_uuid(),
-  project_id uuid not null references public.projects(id) on delete cascade,
-  tag_id uuid not null references public.tags(id) on delete cascade,
-  unique (project_id, tag_id)
-);
-
-create table if not exists public.task_tags (
-  id uuid primary key default gen_random_uuid(),
-  task_id uuid not null references public.tasks(id) on delete cascade,
-  tag_id uuid not null references public.tags(id) on delete cascade,
-  unique (task_id, tag_id)
-);
-
 create index if not exists idx_projects_owner_id on public.projects(owner_id);
 create index if not exists idx_projects_archived_status on public.projects(archived, status);
 create index if not exists idx_project_members_user_id on public.project_members(user_id);
@@ -328,9 +307,6 @@ alter table public.task_dependencies enable row level security;
 alter table public.comments enable row level security;
 alter table public.attachments enable row level security;
 alter table public.activity_logs enable row level security;
-alter table public.tags enable row level security;
-alter table public.project_tags enable row level security;
-alter table public.task_tags enable row level security;
 
 create policy "profiles_select_self_or_workspace"
 on public.profiles for select
@@ -471,44 +447,6 @@ with check (uploaded_by = auth.uid() or public.is_manager_or_admin());
 create policy "activity_logs_read"
 on public.activity_logs for select
 using (public.is_manager_or_admin() or user_id = auth.uid());
-
-create policy "tags_read"
-on public.tags for select
-using (auth.role() = 'authenticated');
-
-create policy "tags_manage"
-on public.tags for all
-using (public.is_manager_or_admin())
-with check (public.is_manager_or_admin());
-
-create policy "project_tags_read"
-on public.project_tags for select
-using (public.is_project_member(project_id));
-
-create policy "project_tags_manage"
-on public.project_tags for all
-using (public.is_manager_or_admin())
-with check (public.is_manager_or_admin());
-
-create policy "task_tags_read"
-on public.task_tags for select
-using (
-  exists (
-    select 1 from public.tasks t
-    where t.id = task_id
-      and (
-        t.assignee_id = auth.uid()
-        or t.reporter_id = auth.uid()
-        or (t.project_id is not null and public.is_project_member(t.project_id))
-        or public.is_manager_or_admin()
-      )
-  )
-);
-
-create policy "task_tags_manage"
-on public.task_tags for all
-using (public.is_manager_or_admin())
-with check (public.is_manager_or_admin());
 
 insert into public.workspace_settings (workspace_name)
 select 'Northstar PM'

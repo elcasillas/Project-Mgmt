@@ -195,21 +195,7 @@ export function TaskFormModal({
                 </p>
               </div>
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Tags</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {task.tags?.length ? (
-                    task.tags.map((tag) => (
-                      <span key={tag.id} className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-slate-600">
-                        {tag.name}
-                      </span>
-                    ))
-                  ) : (
-                    <p className="text-sm text-slate-500">No tags</p>
-                  )}
-                </div>
-              </div>
+            <div className="grid gap-4 md:grid-cols-1">
               <div className="rounded-2xl bg-slate-50 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Dependencies</p>
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -322,11 +308,6 @@ export function TaskFormModal({
             <FormField label="Actual hours">
               <Input name="actual_hours" type="number" step="0.5" defaultValue={task?.actual_hours ?? ""} />
             </FormField>
-            <div className="md:col-span-2">
-              <FormField label="Tags" hint="Comma-separated tag names.">
-                <Input name="tags" defaultValue={task?.tags?.map((tag) => tag.name).join(", ")} />
-              </FormField>
-            </div>
             <div className="md:col-span-2">
               <FormField
                 label="Dependencies"

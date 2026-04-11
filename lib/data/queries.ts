@@ -74,9 +74,6 @@ function mapProject(row: any): Project {
           .filter(Boolean)
           .map((profile: any) => mapProfile(profile))
       : [],
-    tags: Array.isArray(row.project_tags)
-      ? row.project_tags.map((entry: any) => entry.tags)
-      : [],
     task_count: row.tasks?.[0]?.count ?? undefined,
     overdue_task_count: row.overdue_tasks?.[0]?.count ?? undefined
   };
@@ -126,7 +123,6 @@ function mapTask(row: any): Task {
           progress: row.projects.progress
         }
       : null,
-    tags: Array.isArray(row.task_tags) ? row.task_tags.map((entry: any) => entry.tags) : [],
     dependency_ids: Array.isArray(row.task_dependencies)
       ? row.task_dependencies.map((entry: any) => entry.depends_on_task_id)
       : []
@@ -199,9 +195,6 @@ export async function getProjects() {
           owner:profiles!projects_owner_id_fkey(*),
           project_members(
             profiles(*)
-          ),
-          project_tags(
-            tags(*)
           )
         `
       )
@@ -231,9 +224,6 @@ export async function getProjectDetail(projectId: string) {
             owner:profiles!projects_owner_id_fkey(*),
             project_members(
               profiles(*)
-            ),
-            project_tags(
-              tags(*)
             )
           `
         )
@@ -247,7 +237,6 @@ export async function getProjectDetail(projectId: string) {
             assignee:profiles!tasks_assignee_id_fkey(*),
             reporter:profiles!tasks_reporter_id_fkey(*),
             projects(id, name, status, priority, progress),
-            task_tags(tags(*)),
             task_dependencies!task_dependencies_task_id_fkey(depends_on_task_id)
           `
         )
@@ -309,7 +298,6 @@ export async function getTasks() {
           assignee:profiles!tasks_assignee_id_fkey(*),
           reporter:profiles!tasks_reporter_id_fkey(*),
           projects(id, name, status, priority, progress),
-          task_tags(tags(*)),
           task_dependencies!task_dependencies_task_id_fkey(depends_on_task_id)
         `
       )
@@ -337,7 +325,6 @@ export async function getTaskDetail(taskId: string) {
           assignee:profiles!tasks_assignee_id_fkey(*),
           reporter:profiles!tasks_reporter_id_fkey(*),
           projects(id, name, status, priority, progress),
-          task_tags(tags(*)),
           task_dependencies!task_dependencies_task_id_fkey(depends_on_task_id)
         `
       )

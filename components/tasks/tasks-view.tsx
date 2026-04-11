@@ -61,8 +61,7 @@ export function TasksView({
         !query ||
         task.title.toLowerCase().includes(query.toLowerCase()) ||
         task.description?.toLowerCase().includes(query.toLowerCase()) ||
-        task.project?.name.toLowerCase().includes(query.toLowerCase()) ||
-        task.tags?.some((tag) => tag.name.toLowerCase().includes(query.toLowerCase()));
+        task.project?.name.toLowerCase().includes(query.toLowerCase());
       const matchesStatus = status === "All" || task.status === status;
       const matchesPriority = priority === "All" || task.priority === priority;
       const matchesAssignee = assignee === "All" || task.assignee_id === assignee;

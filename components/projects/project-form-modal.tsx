@@ -183,11 +183,6 @@ export function ProjectFormModal({
             </FormField>
           </div>
           <div className="md:col-span-2">
-            <FormField label="Tags" hint="Comma-separated tag names.">
-              <Input name="tags" defaultValue={project?.tags?.map((tag) => tag.name).join(", ")} />
-            </FormField>
-          </div>
-          <div className="md:col-span-2">
             <FormField label="Project notes">
               <Textarea name="notes" defaultValue={project?.notes ?? ""} />
             </FormField>

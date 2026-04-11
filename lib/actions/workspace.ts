@@ -87,17 +87,6 @@ export async function saveProjectAction(formData: FormData) {
     if (uniqueMemberIds.length) {
       await supabase.from("project_members").insert(uniqueMemberIds.map((memberId) => ({ project_id: savedProjectId, user_id: memberId })));
     }
-
-    const tagNames = splitCsv(String(formData.get("tags") || ""));
-    await supabase.from("project_tags").delete().eq("project_id", savedProjectId);
-    if (tagNames.length) {
-      for (const tagName of tagNames) {
-        const { data: tag } = await supabase.from("tags").upsert({ name: tagName, color: "#0ea5e9" }, { onConflict: "name" }).select("id").single();
-        if (tag?.id) {
-          await supabase.from("project_tags").upsert({ project_id: savedProjectId, tag_id: tag.id }, { onConflict: "project_id,tag_id" });
-        }
-      }
-    }
   }
 
   revalidatePath("/dashboard");
@@ -190,17 +179,6 @@ export async function saveTaskAction(formData: FormData) {
       await supabase
         .from("task_dependencies")
         .insert(dependencyIds.map((dependsOnTaskId) => ({ task_id: savedTaskId, depends_on_task_id: dependsOnTaskId })));
-    }
-
-    const tagNames = splitCsv(String(formData.get("tags") || ""));
-    await supabase.from("task_tags").delete().eq("task_id", savedTaskId);
-    if (tagNames.length) {
-      for (const tagName of tagNames) {
-        const { data: tag } = await supabase.from("tags").upsert({ name: tagName, color: "#14b8a6" }, { onConflict: "name" }).select("id").single();
-        if (tag?.id) {
-          await supabase.from("task_tags").upsert({ task_id: savedTaskId, tag_id: tag.id }, { onConflict: "task_id,tag_id" });
-        }
-      }
     }
   }
 

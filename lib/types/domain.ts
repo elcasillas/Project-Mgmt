@@ -20,13 +20,6 @@ export type Profile = {
   deleted_at: string | null;
 };
 
-export type Tag = {
-  id: string;
-  name: string;
-  color: string;
-  created_at: string;
-};
-
 export type Project = {
   id: string;
   name: string;
@@ -43,7 +36,6 @@ export type Project = {
   updated_at: string;
   owner?: Profile;
   members?: Profile[];
-  tags?: Tag[];
   task_count?: number;
   overdue_task_count?: number;
 };
@@ -66,7 +58,6 @@ export type Task = {
   assignee?: Profile | null;
   reporter?: Profile | null;
   project?: Pick<Project, "id" | "name" | "status" | "priority" | "progress"> | null;
-  tags?: Tag[];
   dependency_ids?: string[];
 };
 

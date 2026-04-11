@@ -39,8 +39,7 @@ export function ProjectsView({
       const matchesQuery =
         !query ||
         project.name.toLowerCase().includes(query.toLowerCase()) ||
-        project.description?.toLowerCase().includes(query.toLowerCase()) ||
-        project.tags?.some((tag) => tag.name.toLowerCase().includes(query.toLowerCase()));
+        project.description?.toLowerCase().includes(query.toLowerCase());
       const matchesStatus = status === "All" || project.status === status;
       const matchesPriority = priority === "All" || project.priority === priority;
       return matchesQuery && matchesStatus && matchesPriority;
@@ -94,11 +93,6 @@ export function ProjectsView({
               </div>
               <div className="flex flex-wrap gap-2">
                 <Badge value={project.status} />
-                {project.tags?.map((tag) => (
-                  <span key={tag.id} className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
-                    {tag.name}
-                  </span>
-                ))}
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">

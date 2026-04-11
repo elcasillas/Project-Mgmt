@@ -14,7 +14,6 @@ import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { canManageTasks } from "@/lib/utils/permissions";
 import { formatDate, formatRelative } from "@/lib/utils/format";
-import { resolveTaskDependencyNames } from "@/lib/utils/task-dependencies";
 import type { Attachment, Comment, Project, Task, ActivityLog, Profile, UserRole } from "@/lib/types/domain";
 
 type Tab = "Overview" | "Tasks" | "Team" | "Activity" | "Files";
@@ -101,20 +100,6 @@ export function ProjectDetailTabs({
                 <span className="font-medium text-slate-900">{project.progress}%</span>
               </div>
               <Progress value={project.progress} />
-            </div>
-            <div className="grid gap-3 md:grid-cols-2">
-              {tasks.slice(0, 4).map((task) => (
-                <div key={task.id} className="rounded-2xl border border-slate-100 p-4">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="font-medium text-slate-900">{task.title}</p>
-                    <Badge value={task.status} />
-                  </div>
-                  <p className="mt-2 text-sm text-slate-500">{task.assignee?.full_name ?? "Unassigned"}</p>
-                  <p className="mt-2 text-xs text-slate-500" title={resolveTaskDependencyNames(task, tasks).join(", ") || "None"}>
-                    Dependencies: {resolveTaskDependencyNames(task, tasks).join(", ") || "None"}
-                  </p>
-                </div>
-              ))}
             </div>
           </Card>
           <div className="space-y-6">

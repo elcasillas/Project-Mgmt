@@ -29,17 +29,11 @@ export function TaskTable({
   canEditTasks?: boolean;
   redirectPath?: string;
 }) {
-  const [dueDateSort, setDueDateSort] = useState<DueDateSortDirection | null>(null);
+  const [dueDateSort, setDueDateSort] = useState<DueDateSortDirection>("asc");
   const taskActionButtonClassName =
     "h-9 w-9 rounded-md border border-gray-200 bg-transparent p-0 text-slate-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#00ADB1]";
   const taskDeleteButtonClassName = `${taskActionButtonClassName} hover:text-red-600 active:text-red-600`;
-  const visibleTasks = useMemo(() => {
-    if (!dueDateSort) {
-      return tasks;
-    }
-
-    return sortTasksByDueDate(tasks, dueDateSort);
-  }, [dueDateSort, tasks]);
+  const visibleTasks = useMemo(() => sortTasksByDueDate(tasks, dueDateSort), [dueDateSort, tasks]);
 
   if (!tasks.length) {
     return (
@@ -61,7 +55,7 @@ export function TaskTable({
               <th className="px-6 py-4 font-medium">Status</th>
               <th className="px-6 py-4 font-medium">Priority</th>
               <th className="px-6 py-4 font-medium">Assignee</th>
-              <th className="px-6 py-4 font-medium" aria-sort={dueDateSort === "asc" ? "ascending" : dueDateSort === "desc" ? "descending" : "none"}>
+              <th className="px-6 py-4 font-medium" aria-sort={dueDateSort === "asc" ? "ascending" : "descending"}>
                 <button
                   type="button"
                   className="inline-flex items-center gap-1 text-inherit transition hover:text-slate-700 focus:outline-none focus:text-slate-700"

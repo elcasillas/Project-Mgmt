@@ -2,12 +2,21 @@ import type { Task } from "@/lib/types/domain";
 
 export type DueDateSortDirection = "asc" | "desc";
 
+function parseDueDate(value: string | null | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  const timestamp = Date.parse(value);
+  return Number.isNaN(timestamp) ? null : timestamp;
+}
+
 export function sortTasksByDueDate(tasks: Task[], direction: DueDateSortDirection): Task[] {
   return [...tasks]
     .map((task, index) => ({ task, index }))
     .sort((left, right) => {
-      const leftTime = left.task.due_date ? Date.parse(left.task.due_date) : null;
-      const rightTime = right.task.due_date ? Date.parse(right.task.due_date) : null;
+      const leftTime = parseDueDate(left.task.due_date);
+      const rightTime = parseDueDate(right.task.due_date);
 
       if (leftTime === null && rightTime === null) {
         return left.index - right.index;

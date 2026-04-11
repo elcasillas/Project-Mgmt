@@ -11,6 +11,7 @@ export function Modal({
   description,
   onClose,
   headerActions,
+  panelClassName,
   children
 }: {
   open: boolean;
@@ -18,6 +19,7 @@ export function Modal({
   description?: string;
   onClose: () => void;
   headerActions?: React.ReactNode;
+  panelClassName?: string;
   children: React.ReactNode;
 }) {
   const [mounted, setMounted] = useState(false);
@@ -37,7 +39,7 @@ export function Modal({
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/72 p-4 backdrop-blur-[20px]">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[12px] bg-[#f5f5f7] p-6 shadow-soft">
+      <div className={`max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[12px] bg-[#f5f5f7] p-6 shadow-soft ${panelClassName ?? ""}`}>
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-[28px] font-semibold leading-[1.14] tracking-[-0.02em] text-[#1d1d1f]">{title}</h2>

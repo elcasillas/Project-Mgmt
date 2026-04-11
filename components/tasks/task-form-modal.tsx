@@ -5,6 +5,7 @@ import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { ConfirmationDialog } from "@/components/shared/confirmation-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
@@ -13,12 +14,30 @@ import { Textarea } from "@/components/ui/textarea";
 import { FormField } from "@/components/shared/form-field";
 import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 import { TASK_PRIORITIES, TASK_STATUSES } from "@/lib/data/constants";
+import { cn } from "@/lib/utils/cn";
 import { formatDate } from "@/lib/utils/format";
 import { resolveTaskDependencyNames } from "@/lib/utils/task-dependencies";
 import { saveTaskAction } from "@/lib/actions/workspace";
 import type { Profile, Project, Task } from "@/lib/types/domain";
 
 type ModalMode = "view" | "edit" | "create";
+
+function DetailField({
+  label,
+  value,
+  className
+}: {
+  label: string;
+  value: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("rounded-[12px] bg-white p-5 shadow-[rgba(0,0,0,0.06)_0px_10px_30px]", className)}>
+      <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[rgba(29,29,31,0.5)]">{label}</p>
+      <div className="mt-3 break-words text-[17px] font-medium leading-[1.35] tracking-[-0.01em] text-[#1d1d1f]">{value}</div>
+    </div>
+  );
+}
 
 export function TaskFormModal({
   profiles,
@@ -143,6 +162,7 @@ export function TaskFormModal({
             ? "Review task ownership, timing, dependencies, and project linkage."
             : "Shape scope, ownership, and timing in one focused workflow."
         }
+        panelClassName={modalMode === "view" ? "max-w-4xl p-4 sm:p-6 lg:p-8" : undefined}
         headerActions={
           task && modalMode === "view" ? (
             <Button
@@ -160,64 +180,108 @@ export function TaskFormModal({
       >
         {error ? <p className="mb-4 rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p> : null}
         {modalMode === "view" && task ? (
-          <div className="space-y-5">
-            <div>
-              <h3 className="text-lg font-semibold text-slate-950">{task.title}</h3>
-              <p className="mt-2 text-sm text-slate-500">{task.description || "No description provided."}</p>
-              <div className="mt-4 space-y-2 text-sm">
-                <p className="text-slate-700">
-                  <span className="font-semibold text-slate-950">Status:</span> <span>{task.status}</span>
-                </p>
-                <p className="text-slate-700">
-                  <span className="font-semibold text-slate-950">Priority:</span> <span>{task.priority}</span>
-                </p>
-              </div>
-            </div>
-            <div className="rounded-2xl bg-slate-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Project</p>
-              <p className="mt-2 font-medium text-slate-900">{task.project?.name ?? "Not set"}</p>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Assignee</p>
-                <p className="mt-2 font-medium text-slate-900">{task.assignee?.full_name ?? "Not set"}</p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Reporter</p>
-                <p className="mt-2 font-medium text-slate-900">{task.reporter?.full_name ?? "Not set"}</p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Start date</p>
-                <p className="mt-2 font-medium text-slate-900">{task.start_date ? formatDate(task.start_date) : "Not set"}</p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Due date</p>
-                <p className="mt-2 font-medium text-slate-900">{task.due_date ? formatDate(task.due_date) : "Not set"}</p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Dependencies</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {dependencyNames.length ? (
-                    dependencyNames.map((dependencyName) => (
-                      <span key={`${task.id}:${dependencyName}`} className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-slate-600">
-                        {dependencyName}
-                      </span>
-                    ))
-                  ) : (
-                    <p className="text-sm text-slate-500">None</p>
-                  )}
+          <div className="space-y-6">
+            <section className="rounded-[12px] bg-[#1d1d1f] px-5 py-6 text-white sm:px-6">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div className="min-w-0">
+                  <p className="text-[12px] font-semibold uppercase tracking-[0.22em] text-white/55">Task overview</p>
+                  <h3 className="mt-3 text-[28px] font-semibold leading-[1.14] tracking-[-0.02em] break-words sm:text-[32px]">
+                    {task.title}
+                  </h3>
+                  <p className="mt-4 max-w-3xl text-[15px] leading-[1.47] tracking-[-0.01em] text-white/78">
+                    {task.description || "No description provided."}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2 lg:justify-end">
+                  <Badge value={task.status} className="bg-white/12 text-white" />
+                  <Badge value={task.priority} className="bg-white/12 text-white" />
                 </div>
               </div>
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Hours</p>
-                <p className="mt-2 font-medium text-slate-900">
-                  {task.actual_hours == null && task.estimated_hours == null
-                    ? "Not set"
-                    : `${task.actual_hours ?? 0} / ${task.estimated_hours ?? 0}`}
-                </p>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="rounded-[12px] bg-white/8 px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50">Project</p>
+                  <p className="mt-2 break-words text-[15px] font-medium tracking-[-0.01em] text-white">{task.project?.name ?? "Not set"}</p>
+                </div>
+                <div className="rounded-[12px] bg-white/8 px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50">Assignee</p>
+                  <p className="mt-2 break-words text-[15px] font-medium tracking-[-0.01em] text-white">{task.assignee?.full_name ?? "Not set"}</p>
+                </div>
+                <div className="rounded-[12px] bg-white/8 px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50">Due date</p>
+                  <p className="mt-2 break-words text-[15px] font-medium tracking-[-0.01em] text-white">{task.due_date ? formatDate(task.due_date) : "Not set"}</p>
+                </div>
+                <div className="rounded-[12px] bg-white/8 px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50">Hours</p>
+                  <p className="mt-2 break-words text-[15px] font-medium tracking-[-0.01em] text-white">
+                    {task.actual_hours == null && task.estimated_hours == null
+                      ? "Not set"
+                      : `${task.actual_hours ?? 0} / ${task.estimated_hours ?? 0}`}
+                  </p>
+                </div>
               </div>
+            </section>
+
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.95fr)]">
+              <section className="space-y-4">
+                <DetailField label="Project" value={task.project?.name ?? "Not set"} />
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <DetailField label="Assignee" value={task.assignee?.full_name ?? "Not set"} />
+                  <DetailField label="Reporter" value={task.reporter?.full_name ?? "Not set"} />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <DetailField label="Start date" value={task.start_date ? formatDate(task.start_date) : "Not set"} />
+                  <DetailField label="Due date" value={task.due_date ? formatDate(task.due_date) : "Not set"} />
+                </div>
+              </section>
+
+              <section className="space-y-4">
+                <DetailField
+                  label="Status"
+                  value={
+                    <div className="flex flex-wrap gap-2">
+                      <Badge value={task.status} />
+                    </div>
+                  }
+                />
+                <DetailField
+                  label="Priority"
+                  value={
+                    <div className="flex flex-wrap gap-2">
+                      <Badge value={task.priority} />
+                    </div>
+                  }
+                />
+                <DetailField
+                  label="Dependencies"
+                  value={
+                    dependencyNames.length ? (
+                      <div className="flex flex-wrap gap-2">
+                        {dependencyNames.map((dependencyName) => (
+                          <span
+                            key={`${task.id}:${dependencyName}`}
+                            className="inline-flex rounded-full bg-[#f5f5f7] px-3 py-1 text-[14px] font-medium tracking-[-0.01em] text-[rgba(29,29,31,0.72)]"
+                          >
+                            {dependencyName}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      "None"
+                    )
+                  }
+                />
+                <DetailField
+                  label="Hours"
+                  value={
+                    task.actual_hours == null && task.estimated_hours == null
+                      ? "Not set"
+                      : `${task.actual_hours ?? 0} / ${task.estimated_hours ?? 0}`
+                  }
+                />
+              </section>
             </div>
-            <div className="flex justify-end">
+
+            <div className="flex justify-end border-t border-[rgba(29,29,31,0.08)] pt-2">
               <Button type="button" variant="ghost" onClick={requestClose}>
                 Close
               </Button>
@@ -239,9 +303,6 @@ export function TaskFormModal({
               <h3 className="mt-3 text-[28px] font-semibold leading-[1.14] tracking-[-0.02em]">
                 {task ? task.title : "Define the work clearly before execution starts."}
               </h3>
-              <p className="mt-3 max-w-2xl text-[14px] leading-[1.43] tracking-[-0.01em] text-white/72">
-                Keep the structure precise: clarify scope, set ownership, choose dates, and define dependencies in one pass.
-              </p>
             </div>
 
             <section className={sectionClassName}>

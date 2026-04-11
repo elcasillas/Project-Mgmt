@@ -182,41 +182,19 @@ export function TaskFormModal({
         {modalMode === "view" && task ? (
           <div className="space-y-6">
             <section className="rounded-[12px] bg-[#1d1d1f] px-5 py-6 text-white sm:px-6">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div className="min-w-0">
-                  <p className="text-[12px] font-semibold uppercase tracking-[0.22em] text-white/55">Task overview</p>
-                  <h3 className="mt-3 text-[28px] font-semibold leading-[1.14] tracking-[-0.02em] break-words sm:text-[32px]">
-                    {task.title}
-                  </h3>
-                  <p className="mt-4 max-w-3xl text-[15px] leading-[1.47] tracking-[-0.01em] text-white/78">
-                    {task.description || "No description provided."}
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2 lg:justify-end">
-                  <Badge value={task.status} className="bg-white/12 text-white" />
-                  <Badge value={task.priority} className="bg-white/12 text-white" />
-                </div>
+              <div className="min-w-0">
+                <p className="text-[12px] font-semibold uppercase tracking-[0.22em] text-white/55">Task overview</p>
+                <h3 className="mt-3 text-[28px] font-semibold leading-[1.14] tracking-[-0.02em] break-words sm:text-[32px]">
+                  {task.title}
+                </h3>
+                <p className="mt-4 max-w-3xl text-[15px] leading-[1.47] tracking-[-0.01em] text-white/78">
+                  {task.description || "No description provided."}
+                </p>
               </div>
-              <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="mt-5 max-w-sm">
                 <div className="rounded-[12px] bg-white/8 px-4 py-3">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50">Project</p>
                   <p className="mt-2 break-words text-[15px] font-medium tracking-[-0.01em] text-white">{task.project?.name ?? "Not set"}</p>
-                </div>
-                <div className="rounded-[12px] bg-white/8 px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50">Assignee</p>
-                  <p className="mt-2 break-words text-[15px] font-medium tracking-[-0.01em] text-white">{task.assignee?.full_name ?? "Not set"}</p>
-                </div>
-                <div className="rounded-[12px] bg-white/8 px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50">Due date</p>
-                  <p className="mt-2 break-words text-[15px] font-medium tracking-[-0.01em] text-white">{task.due_date ? formatDate(task.due_date) : "Not set"}</p>
-                </div>
-                <div className="rounded-[12px] bg-white/8 px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50">Hours</p>
-                  <p className="mt-2 break-words text-[15px] font-medium tracking-[-0.01em] text-white">
-                    {task.actual_hours == null && task.estimated_hours == null
-                      ? "Not set"
-                      : `${task.actual_hours ?? 0} / ${task.estimated_hours ?? 0}`}
-                  </p>
                 </div>
               </div>
             </section>

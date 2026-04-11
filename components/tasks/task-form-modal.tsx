@@ -71,6 +71,8 @@ export function TaskFormModal({
   });
   const selectedProject = projects.find((projectOption) => projectOption.id === selectedProjectId);
   const dependencyNames = task ? resolveTaskDependencyNames(task, availableTasks) : [];
+  const sectionClassName = "rounded-[12px] bg-white p-5 shadow-[rgba(0,0,0,0.08)_0px_12px_32px]";
+  const sectionHeadingClassName = "text-[21px] font-semibold leading-[1.19] tracking-[0.01em] text-[#1d1d1f]";
   const availableDependencyTasks = availableTasks.filter(
     (candidateTask) => candidateTask.project_id === selectedProjectId && candidateTask.id !== task?.id
   );
@@ -135,11 +137,11 @@ export function TaskFormModal({
       <Modal
         open={open}
         onClose={requestClose}
-        title={modalMode === "create" ? "Create task" : "Task Details"}
+        title={modalMode === "create" ? "Create Task" : modalMode === "edit" ? "Edit Task" : "Task Details"}
         description={
           modalMode === "view"
             ? "Review task ownership, timing, dependencies, and project linkage."
-            : "Set ownership, timing, dependencies, and project linkage."
+            : "Shape scope, ownership, and timing in one focused workflow."
         }
         headerActions={
           task && modalMode === "view" ? (
@@ -224,95 +226,137 @@ export function TaskFormModal({
         ) : (
           <form
             ref={formRef}
-            className="grid gap-4 md:grid-cols-2"
+            className="space-y-6"
             onSubmit={(event) => {
               event.preventDefault();
             }}
           >
             <input type="hidden" name="id" value={task?.id ?? ""} />
-            <FormField label="Title">
-              <Input name="title" defaultValue={task?.title} required />
-            </FormField>
-            <FormField label="Project">
-              {lockProjectSelection ? (
-                <>
-                  <input type="hidden" name="project_id" value={selectedProjectId} />
-                  <div className="flex min-h-11 items-center rounded-[11px] border border-[rgba(29,29,31,0.08)] bg-[#fafafc] px-4 text-[15px] text-slate-700">
-                    {selectedProject?.name ?? "Current project"}
-                  </div>
-                </>
-              ) : (
-                <Select
-                  name="project_id"
-                  value={selectedProjectId}
-                  onChange={(event) => {
-                    setSelectedProjectId(event.target.value);
-                  }}
-                >
-                  <option value="">No project</option>
-                  {projects.map((project) => (
-                    <option key={project.id} value={project.id}>
-                      {project.name}
-                    </option>
-                  ))}
-                </Select>
-              )}
-            </FormField>
-            <div className="md:col-span-2">
-              <FormField label="Description">
-                <Textarea name="description" defaultValue={task?.description ?? ""} />
-              </FormField>
+            <div className="rounded-[12px] bg-[#1d1d1f] px-5 py-6 text-white">
+              <p className="text-[12px] font-semibold uppercase tracking-[0.22em] text-white/55">
+                {task ? "Task refinement" : "Task creation"}
+              </p>
+              <h3 className="mt-3 text-[28px] font-semibold leading-[1.14] tracking-[-0.02em]">
+                {task ? task.title : "Define the work clearly before execution starts."}
+              </h3>
+              <p className="mt-3 max-w-2xl text-[14px] leading-[1.43] tracking-[-0.01em] text-white/72">
+                Keep the structure precise: clarify scope, set ownership, choose dates, and define dependencies in one pass.
+              </p>
             </div>
-            <FormField label="Status">
-              <Select name="status" defaultValue={task?.status ?? "Not Started"}>
-                {TASK_STATUSES.map((status) => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </Select>
-            </FormField>
-            <FormField label="Priority">
-              <Select name="priority" defaultValue={task?.priority ?? "Medium"}>
-                {TASK_PRIORITIES.map((priority) => (
-                  <option key={priority} value={priority}>
-                    {priority}
-                  </option>
-                ))}
-              </Select>
-            </FormField>
-            <FormField label="Assignee">
-              <Select name="assignee_id" defaultValue={task?.assignee_id ?? ""}>
-                <option value="">Unassigned</option>
-                {profiles.map((profile) => (
-                  <option key={profile.id} value={profile.id}>
-                    {profile.full_name}
-                  </option>
-                ))}
-              </Select>
-            </FormField>
-            <FormField label="Reporter">
-              <Select name="reporter_id" defaultValue={task?.reporter_id ?? ""}>
-                {profiles.map((profile) => (
-                  <option key={profile.id} value={profile.id}>
-                    {profile.full_name}
-                  </option>
-                ))}
-              </Select>
-            </FormField>
-            <FormField label="Start date">
-              <Input name="start_date" type="date" defaultValue={task?.start_date ?? ""} />
-            </FormField>
-            <FormField label="Due date">
-              <Input name="due_date" type="date" defaultValue={task?.due_date ?? ""} />
-            </FormField>
-            <FormField label="Estimated hours">
-              <Input name="estimated_hours" type="number" step="0.5" defaultValue={task?.estimated_hours ?? ""} />
-            </FormField>
-            <FormField label="Actual hours">
-              <Input name="actual_hours" type="number" step="0.5" defaultValue={task?.actual_hours ?? ""} />
-            </FormField>
-            <div className="md:col-span-2">
+
+            <section className={sectionClassName}>
+              <div className="mb-5 space-y-1">
+                <h3 className={sectionHeadingClassName}>Core Details</h3>
+                <p className="text-[14px] leading-[1.43] tracking-[-0.01em] text-[rgba(29,29,31,0.56)]">
+                  Start with the task identity, project placement, and execution priority.
+                </p>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="md:col-span-2">
+                  <FormField label="Title">
+                    <Input name="title" defaultValue={task?.title} required />
+                  </FormField>
+                </div>
+                <FormField label="Project">
+                  {lockProjectSelection ? (
+                    <>
+                      <input type="hidden" name="project_id" value={selectedProjectId} />
+                      <div className="flex min-h-11 items-center rounded-[11px] border border-[rgba(29,29,31,0.08)] bg-[#fafafc] px-4 text-[15px] text-slate-700">
+                        {selectedProject?.name ?? "Current project"}
+                      </div>
+                    </>
+                  ) : (
+                    <Select
+                      name="project_id"
+                      value={selectedProjectId}
+                      onChange={(event) => {
+                        setSelectedProjectId(event.target.value);
+                      }}
+                    >
+                      <option value="">No project</option>
+                      {projects.map((project) => (
+                        <option key={project.id} value={project.id}>
+                          {project.name}
+                        </option>
+                      ))}
+                    </Select>
+                  )}
+                </FormField>
+                <FormField label="Status">
+                  <Select name="status" defaultValue={task?.status ?? "Not Started"}>
+                    {TASK_STATUSES.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </Select>
+                </FormField>
+                <FormField label="Priority">
+                  <Select name="priority" defaultValue={task?.priority ?? "Medium"}>
+                    {TASK_PRIORITIES.map((priority) => (
+                      <option key={priority} value={priority}>
+                        {priority}
+                      </option>
+                    ))}
+                  </Select>
+                </FormField>
+                <div className="md:col-span-2">
+                  <FormField label="Description">
+                    <Textarea name="description" defaultValue={task?.description ?? ""} className="min-h-[140px]" />
+                  </FormField>
+                </div>
+              </div>
+            </section>
+
+            <section className={sectionClassName}>
+              <div className="mb-5 space-y-1">
+                <h3 className={sectionHeadingClassName}>Ownership And Schedule</h3>
+                <p className="text-[14px] leading-[1.43] tracking-[-0.01em] text-[rgba(29,29,31,0.56)]">
+                  Assign accountability and set the dates and effort needed to finish the work.
+                </p>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField label="Assignee">
+                  <Select name="assignee_id" defaultValue={task?.assignee_id ?? ""}>
+                    <option value="">Unassigned</option>
+                    {profiles.map((profile) => (
+                      <option key={profile.id} value={profile.id}>
+                        {profile.full_name}
+                      </option>
+                    ))}
+                  </Select>
+                </FormField>
+                <FormField label="Reporter">
+                  <Select name="reporter_id" defaultValue={task?.reporter_id ?? ""}>
+                    {profiles.map((profile) => (
+                      <option key={profile.id} value={profile.id}>
+                        {profile.full_name}
+                      </option>
+                    ))}
+                  </Select>
+                </FormField>
+                <FormField label="Start date">
+                  <Input name="start_date" type="date" defaultValue={task?.start_date ?? ""} />
+                </FormField>
+                <FormField label="Due date">
+                  <Input name="due_date" type="date" defaultValue={task?.due_date ?? ""} />
+                </FormField>
+                <FormField label="Estimated hours">
+                  <Input name="estimated_hours" type="number" step="0.5" defaultValue={task?.estimated_hours ?? ""} />
+                </FormField>
+                <FormField label="Actual hours">
+                  <Input name="actual_hours" type="number" step="0.5" defaultValue={task?.actual_hours ?? ""} />
+                </FormField>
+              </div>
+            </section>
+
+            <section className={sectionClassName}>
+              <div className="mb-5 space-y-1">
+                <h3 className={sectionHeadingClassName}>Dependencies</h3>
+                <p className="text-[14px] leading-[1.43] tracking-[-0.01em] text-[rgba(29,29,31,0.56)]">
+                  Define the tasks that must land first so execution order stays explicit.
+                </p>
+              </div>
               <FormField
                 label="Dependencies"
                 hint={
@@ -387,38 +431,44 @@ export function TaskFormModal({
                   )}
                 </div>
               </FormField>
-            </div>
-            <div className="md:col-span-2 flex justify-end gap-3">
-              <Button type="button" variant="ghost" onClick={requestClose}>
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                disabled={isPending}
-                onClick={() => {
-                  if (!formRef.current) {
-                    return;
-                  }
+            </section>
 
-                  const formData = new FormData(formRef.current);
-                  startTransition(async () => {
-                    setError(null);
-                    const result = await saveTaskAction(formData);
-                    if (!result?.ok) {
-                      setError(result?.message || "Unable to save task.");
+            <div className="flex flex-col gap-3 rounded-[12px] bg-white p-5 shadow-[rgba(0,0,0,0.08)_0px_12px_32px] sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-[14px] leading-[1.43] tracking-[-0.01em] text-[rgba(29,29,31,0.56)]">
+                Review the task once before saving. Changes take effect immediately for the workspace.
+              </p>
+              <div className="flex justify-end gap-3">
+                <Button type="button" variant="ghost" onClick={requestClose}>
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  disabled={isPending}
+                  onClick={() => {
+                    if (!formRef.current) {
                       return;
                     }
-                    markClean();
-                    setOpen(false);
-                    if (redirectPath) {
-                      router.push(`${redirectPath}?success=${encodeURIComponent(result.message)}` as Route);
-                    }
-                    router.refresh();
-                  });
-                }}
-              >
-                {isPending ? "Saving..." : task ? "Save changes" : "Create task"}
-              </Button>
+
+                    const formData = new FormData(formRef.current);
+                    startTransition(async () => {
+                      setError(null);
+                      const result = await saveTaskAction(formData);
+                      if (!result?.ok) {
+                        setError(result?.message || "Unable to save task.");
+                        return;
+                      }
+                      markClean();
+                      setOpen(false);
+                      if (redirectPath) {
+                        router.push(`${redirectPath}?success=${encodeURIComponent(result.message)}` as Route);
+                      }
+                      router.refresh();
+                    });
+                  }}
+                >
+                  {isPending ? "Saving..." : task ? "Save changes" : "Create task"}
+                </Button>
+              </div>
             </div>
           </form>
         )}

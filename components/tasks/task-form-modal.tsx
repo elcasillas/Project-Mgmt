@@ -69,6 +69,7 @@ export function TaskFormModal({
     onDiscard: () => setOpen(false)
   });
   const selectedProject = projects.find((projectOption) => projectOption.id === selectedProjectId);
+  const dependencyNames = task ? resolveTaskDependencyNames(task, availableTasks) : [];
   const availableDependencyTasks = availableTasks.filter(
     (candidateTask) => candidateTask.project_id === selectedProjectId && candidateTask.id !== task?.id
   );
@@ -169,48 +170,48 @@ export function TaskFormModal({
                 </p>
               </div>
             </div>
+            <div className="rounded-2xl bg-slate-50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Project</p>
+              <p className="mt-2 font-medium text-slate-900">{task.project?.name ?? "Not set"}</p>
+            </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Project</p>
-                <p className="mt-2 font-medium text-slate-900">{task.project?.name ?? "No project"}</p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Assignee</p>
-                <p className="mt-2 font-medium text-slate-900">{task.assignee?.full_name ?? "Unassigned"}</p>
+                <p className="mt-2 font-medium text-slate-900">{task.assignee?.full_name ?? "Not set"}</p>
               </div>
               <div className="rounded-2xl bg-slate-50 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Reporter</p>
-                <p className="mt-2 font-medium text-slate-900">{task.reporter?.full_name ?? "Unknown"}</p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Due date</p>
-                <p className="mt-2 font-medium text-slate-900">{formatDate(task.due_date)}</p>
+                <p className="mt-2 font-medium text-slate-900">{task.reporter?.full_name ?? "Not set"}</p>
               </div>
               <div className="rounded-2xl bg-slate-50 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Start date</p>
-                <p className="mt-2 font-medium text-slate-900">{formatDate(task.start_date)}</p>
+                <p className="mt-2 font-medium text-slate-900">{task.start_date ? formatDate(task.start_date) : "Not set"}</p>
               </div>
               <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Hours</p>
-                <p className="mt-2 font-medium text-slate-900">
-                  {task.actual_hours ?? 0} / {task.estimated_hours ?? 0}
-                </p>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Due date</p>
+                <p className="mt-2 font-medium text-slate-900">{task.due_date ? formatDate(task.due_date) : "Not set"}</p>
               </div>
-            </div>
-            <div className="grid gap-4 md:grid-cols-1">
               <div className="rounded-2xl bg-slate-50 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Dependencies</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {resolveTaskDependencyNames(task, availableTasks).length ? (
-                    resolveTaskDependencyNames(task, availableTasks).map((dependencyName) => (
+                  {dependencyNames.length ? (
+                    dependencyNames.map((dependencyName) => (
                       <span key={`${task.id}:${dependencyName}`} className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-slate-600">
                         {dependencyName}
                       </span>
                     ))
                   ) : (
-                    <p className="text-sm text-slate-500">No dependencies</p>
+                    <p className="text-sm text-slate-500">None</p>
                   )}
                 </div>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Hours</p>
+                <p className="mt-2 font-medium text-slate-900">
+                  {task.actual_hours == null && task.estimated_hours == null
+                    ? "Not set"
+                    : `${task.actual_hours ?? 0} / ${task.estimated_hours ?? 0}`}
+                </p>
               </div>
             </div>
             <div className="flex justify-end">

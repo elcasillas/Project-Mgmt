@@ -1,7 +1,19 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { addDays, eachDayOfInterval, endOfMonth, format, startOfMonth } from "date-fns";
+import {
+  addMonths,
+  eachDayOfInterval,
+  endOfMonth,
+  endOfWeek,
+  format,
+  isSameMonth,
+  isToday,
+  startOfMonth,
+  startOfWeek,
+  subMonths
+} from "date-fns";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { addCommentAction, deleteAttachmentAction } from "@/lib/actions/workspace";
 import { ConfirmActionButton } from "@/components/shared/confirm-action-button";
 import { AttachmentUploader } from "@/components/shared/attachment-uploader";
@@ -41,6 +53,7 @@ export function TasksView({
   const [assignee, setAssignee] = useState("All");
   const [project, setProject] = useState("All");
   const [dueWindow, setDueWindow] = useState("All");
+  const [visibleMonth, setVisibleMonth] = useState(() => startOfMonth(new Date()));
 
   const filteredTasks = useMemo(() => {
     return tasks.filter((task) => {
@@ -64,10 +77,22 @@ export function TasksView({
     });
   }, [tasks, query, status, priority, assignee, project, dueWindow]);
 
-  const calendarDays = eachDayOfInterval({
-    start: startOfMonth(new Date()),
-    end: endOfMonth(addDays(new Date(), 28))
-  });
+  const calendarDays = useMemo(
+    () =>
+      eachDayOfInterval({
+        start: startOfWeek(startOfMonth(visibleMonth), { weekStartsOn: 0 }),
+        end: endOfWeek(endOfMonth(visibleMonth), { weekStartsOn: 0 })
+      }),
+    [visibleMonth]
+  );
+  const calendarWeeks = useMemo(() => {
+    const weeks: Date[][] = [];
+    for (let index = 0; index < calendarDays.length; index += 7) {
+      weeks.push(calendarDays.slice(index, index + 7));
+    }
+    return weeks;
+  }, [calendarDays]);
+  const weekdayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   const selectedTask = tasks.find((task) => task.id === selectedTaskId);
   const activeTask = selectedTask ?? filteredTasks[0];
@@ -142,27 +167,75 @@ export function TasksView({
 
       {view === "calendar" ? (
         <Card className="space-y-4">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-950">Calendar view</h2>
-            <p className="text-sm text-slate-500">Tasks grouped by due date across the current month.</p>
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-950">Calendar view</h2>
+              <p className="text-sm text-slate-500">Tasks grouped by due date in a standard monthly calendar.</p>
+            </div>
+            <div className="flex items-center gap-2 self-start md:self-auto">
+              <Button variant="secondary" size="sm" onClick={() => setVisibleMonth((current) => subMonths(current, 1))} aria-label="Previous month">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="min-w-[180px] text-center">
+                <p className="text-sm font-medium text-slate-900">{format(visibleMonth, "MMMM yyyy")}</p>
+              </div>
+              <Button variant="secondary" size="sm" onClick={() => setVisibleMonth((current) => addMonths(current, 1))} aria-label="Next month">
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-7">
-            {calendarDays.map((day) => {
-              const dayTasks = filteredTasks.filter((task) => task.due_date === format(day, "yyyy-MM-dd"));
-              return (
-                <div key={day.toISOString()} className="min-h-[160px] rounded-2xl border border-slate-100 bg-slate-50/70 p-3">
-                  <p className="text-sm font-semibold text-slate-900">{format(day, "MMM d")}</p>
-                  <div className="mt-3 space-y-2">
-                    {dayTasks.map((task) => (
-                      <div key={task.id} className="rounded-xl border border-gray-200 bg-white p-3">
-                        <p className="text-sm font-medium text-slate-900">{task.title}</p>
-                        <p className="mt-1 text-xs text-slate-500">{task.project?.name ?? "General task"}</p>
-                      </div>
-                    ))}
+          <div className="overflow-x-auto">
+            <div className="min-w-[840px]">
+              <div className="grid grid-cols-7 border-b border-slate-100">
+                {weekdayLabels.map((label) => (
+                  <div key={label} className="px-3 py-3 text-center text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    {label}
                   </div>
-                </div>
-              );
-            })}
+                ))}
+              </div>
+              <div className="space-y-0">
+                {calendarWeeks.map((week, weekIndex) => (
+                  <div key={`${format(visibleMonth, "yyyy-MM")}-week-${weekIndex}`} className="grid grid-cols-7">
+                    {week.map((day) => {
+                      const dayTasks = filteredTasks.filter((task) => task.due_date === format(day, "yyyy-MM-dd"));
+                      const inVisibleMonth = isSameMonth(day, visibleMonth);
+                      const isCurrentDay = isToday(day);
+
+                      return (
+                        <div
+                          key={day.toISOString()}
+                          className={`min-h-[160px] border-b border-r border-slate-100 p-3 align-top ${
+                            inVisibleMonth ? "bg-white" : "bg-slate-50/70"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span
+                              className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
+                                isCurrentDay
+                                  ? "bg-[#0071e3] text-white"
+                                  : inVisibleMonth
+                                    ? "text-slate-900"
+                                    : "text-slate-400"
+                              }`}
+                            >
+                              {format(day, "d")}
+                            </span>
+                          </div>
+                          <div className="mt-3 space-y-2">
+                            {dayTasks.map((task) => (
+                              <div key={task.id} className="rounded-xl border border-gray-200 bg-slate-50 p-3">
+                                <p className="text-sm font-medium text-slate-900">{task.title}</p>
+                                <p className="mt-1 text-xs text-slate-500">{task.project?.name ?? "General task"}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </Card>
       ) : null}

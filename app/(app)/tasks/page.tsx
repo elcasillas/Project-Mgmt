@@ -1,7 +1,7 @@
 import { PageHeader } from "@/components/shared/page-header";
 import { TasksView } from "@/components/tasks/tasks-view";
 import { Card } from "@/components/ui/card";
-import { getProjects, getTaskCommentsAndAttachments, getTasks, getTeamMembers } from "@/lib/data/queries";
+import { getProjects, getTaskAttachments, getTasks, getTeamMembers } from "@/lib/data/queries";
 
 export default async function TasksPage({
   searchParams
@@ -10,7 +10,7 @@ export default async function TasksPage({
 }) {
   const params = await searchParams;
   const [tasks, projects, teamMembers] = await Promise.all([getTasks(), getProjects(), getTeamMembers()]);
-  const { comments, attachments } = await getTaskCommentsAndAttachments(tasks.map((task) => task.id));
+  const attachments = await getTaskAttachments(tasks.map((task) => task.id));
   const profiles = teamMembers.map(({ activeProjects, assignedTasks, workloadSummary, ...profile }) => profile);
 
   return (
@@ -34,7 +34,6 @@ export default async function TasksPage({
         tasks={tasks}
         projects={projects}
         profiles={profiles}
-        comments={comments}
         attachments={attachments}
         selectedTaskId={params.task}
       />

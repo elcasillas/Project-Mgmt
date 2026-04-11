@@ -397,6 +397,30 @@ export async function getTaskCommentsAndAttachments(taskIds: string[]) {
   }
 }
 
+export async function getTaskAttachments(taskIds: string[]) {
+  if (!taskIds.length) {
+    return [] as Attachment[];
+  }
+
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("attachments")
+      .select("*, uploader:profiles!attachments_uploaded_by_fkey(*)")
+      .in("task_id", taskIds)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return (data ?? []).map(mapAttachment);
+  } catch (error) {
+    logQueryError("getTaskAttachments", error, { taskIds });
+    throw error;
+  }
+}
+
 export async function getTeamMembers() {
   try {
     const supabase = await createClient();

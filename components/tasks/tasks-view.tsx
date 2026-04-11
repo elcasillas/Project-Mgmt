@@ -14,7 +14,7 @@ import {
   subMonths
 } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { addCommentAction, deleteAttachmentAction } from "@/lib/actions/workspace";
+import { deleteAttachmentAction } from "@/lib/actions/workspace";
 import { ConfirmActionButton } from "@/components/shared/confirm-action-button";
 import { AttachmentUploader } from "@/components/shared/attachment-uploader";
 import { TaskFormModal } from "@/components/tasks/task-form-modal";
@@ -25,9 +25,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { formatDate, isDueThisWeek, isOverdue } from "@/lib/utils/format";
-import type { Attachment, Comment, Profile, Project, Task } from "@/lib/types/domain";
+import type { Attachment, Profile, Project, Task } from "@/lib/types/domain";
 
 type ViewMode = "table" | "kanban" | "calendar";
 
@@ -35,14 +34,12 @@ export function TasksView({
   tasks,
   profiles,
   projects,
-  comments,
   attachments,
   selectedTaskId
 }: {
   tasks: Task[];
   profiles: Profile[];
   projects: Project[];
-  comments: Comment[];
   attachments: Attachment[];
   selectedTaskId?: string;
 }) {
@@ -95,7 +92,6 @@ export function TasksView({
 
   const selectedTask = tasks.find((task) => task.id === selectedTaskId);
   const activeTask = selectedTask ?? filteredTasks[0];
-  const taskComments = comments.filter((comment) => comment.task_id === activeTask?.id);
   const taskAttachments = attachments.filter((attachment) => attachment.task_id === activeTask?.id);
 
   return (
@@ -271,25 +267,6 @@ export function TasksView({
                   {activeTask.actual_hours ?? 0} / {activeTask.estimated_hours ?? 0}
                 </p>
               </div>
-            </div>
-            <div className="space-y-3">
-              <h3 className="text-base font-semibold text-slate-950">Comments</h3>
-              <div className="space-y-3">
-                {taskComments.map((comment) => (
-                  <div key={comment.id} className="rounded-2xl border border-slate-100 p-4">
-                    <p className="text-sm text-slate-700">{comment.body}</p>
-                    <p className="mt-2 text-xs text-slate-500">
-                      {comment.author?.full_name ?? "Unknown"} • {formatDate(comment.created_at)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <form action={addCommentAction} className="space-y-3">
-                <input type="hidden" name="task_id" value={activeTask.id} />
-                <input type="hidden" name="project_id" value={activeTask.project_id ?? ""} />
-                <Textarea name="body" placeholder="Add a comment or unblock note" />
-                <Button>Add comment</Button>
-              </form>
             </div>
           </Card>
           <Card className="space-y-5">

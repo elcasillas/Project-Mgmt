@@ -25,11 +25,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
   return (
     <div className="space-y-8">
-      <PageHeader
-        eyebrow="Project Detail"
-        title={detail.project.name}
-        description="A unified delivery view across progress, tasks, activity, and supporting files."
-      />
+      <PageHeader eyebrow="Project Detail" title={detail.project.name} />
       <Card className="space-y-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-3">

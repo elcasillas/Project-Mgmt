@@ -10,12 +10,14 @@ export function Modal({
   title,
   description,
   onClose,
+  headerActions,
   children
 }: {
   open: boolean;
   title: string;
   description?: string;
   onClose: () => void;
+  headerActions?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const [mounted, setMounted] = useState(false);
@@ -41,9 +43,12 @@ export function Modal({
             <h2 className="text-[28px] font-semibold leading-[1.14] tracking-[-0.02em] text-[#1d1d1f]">{title}</h2>
             {description ? <p className="mt-2 text-[14px] leading-[1.43] tracking-[-0.01em] text-[rgba(29,29,31,0.56)]">{description}</p> : null}
           </div>
-          <Button variant="ghost" size="sm" className="bg-[rgba(255,255,255,0.72)]" onClick={onClose} aria-label="Close modal">
-            <X className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            {headerActions}
+            <Button variant="ghost" size="sm" className="bg-[rgba(255,255,255,0.72)]" onClick={onClose} aria-label="Close modal">
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
         {children}
       </div>

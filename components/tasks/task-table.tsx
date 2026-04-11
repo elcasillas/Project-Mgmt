@@ -117,20 +117,21 @@ export function TaskTable({
                   <td className="px-6 py-4 align-top text-slate-600">{task.assignee?.full_name ?? "Unassigned"}</td>
                   <td className="px-6 py-4 align-top text-slate-600">{formatDate(task.due_date)}</td>
                   <td className="px-6 py-4 align-top">
-                    {canEditTasks ? (
-                      <div className="flex gap-2">
-                        <TaskFormModal
-                          profiles={profiles}
-                          projects={projects}
-                          availableTasks={allTasks}
-                          task={task}
-                          triggerLabel="Edit"
-                          triggerAriaLabel="Edit Task"
-                          triggerTitle="Edit Task"
-                          triggerIconOnly
-                          triggerClassName={taskActionButtonClassName}
-                          redirectPath={redirectPath}
-                        />
+                    <div className="flex gap-2">
+                      <TaskFormModal
+                        profiles={profiles}
+                        projects={projects}
+                        availableTasks={allTasks}
+                        task={task}
+                        triggerLabel="View"
+                        triggerAriaLabel="View Task"
+                        triggerTitle="View Task"
+                        triggerIconOnly
+                        triggerClassName={taskActionButtonClassName}
+                        initialMode="view"
+                        redirectPath={redirectPath}
+                      />
+                      {canEditTasks ? (
                         <ConfirmActionButton
                           action={deleteTaskAction}
                           fields={[{ name: "task_id", value: task.id }]}
@@ -142,10 +143,8 @@ export function TaskTable({
                         >
                           <Trash className="h-4 w-4" />
                         </ConfirmActionButton>
-                      </div>
-                    ) : (
-                      <span className="text-slate-500">No actions</span>
-                    )}
+                      ) : null}
+                    </div>
                   </td>
                 </tr>
               );

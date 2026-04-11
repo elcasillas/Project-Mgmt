@@ -191,12 +191,6 @@ export function TaskFormModal({
                   {task.description || "No description provided."}
                 </p>
               </div>
-              <div className="mt-5 max-w-sm">
-                <div className="rounded-[12px] bg-white/8 px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50">Project</p>
-                  <p className="mt-2 break-words text-[15px] font-medium tracking-[-0.01em] text-white">{task.project?.name ?? "Not set"}</p>
-                </div>
-              </div>
             </section>
 
             <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.95fr)]">

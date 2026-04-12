@@ -25,6 +25,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { formatDate, isDueThisWeek, isOverdue } from "@/lib/utils/format";
+import { darkenColor, getContrastTextColor, getStatusTone } from "@/lib/utils/status-colors";
 import type { Attachment, Profile, Project, Task } from "@/lib/types/domain";
 
 type ViewMode = "table" | "kanban" | "calendar";
@@ -216,26 +217,43 @@ export function TasksView({
                           </div>
                           <div className="mt-3 space-y-2">
                             {dayTasks.map((task) => (
-                              <TaskFormModal
-                                key={task.id}
-                                profiles={profiles}
-                                projects={projects}
-                                availableTasks={tasks}
-                                task={task}
-                                initialMode="view"
-                                redirectPath="/tasks"
-                                triggerVariant="ghost"
-                                triggerSize="sm"
-                                triggerAriaLabel={`View task ${task.title}`}
-                                triggerTitle={`View task ${task.title}`}
-                                triggerClassName="h-auto w-full flex-col items-start rounded-xl border border-gray-200 bg-slate-50 p-3 text-left text-slate-900 hover:border-gray-300 hover:bg-white"
-                                triggerLabel={
-                                  <>
-                                    <span className="text-sm font-medium text-slate-900">{task.title}</span>
-                                    <span className="mt-1 text-xs text-slate-500">{task.project?.name ?? "General task"}</span>
-                                  </>
-                                }
-                              />
+                              (() => {
+                                const tone = getStatusTone(task.status);
+                                const textColor = getContrastTextColor(tone.background);
+                                const borderColor = darkenColor(tone.background, 0.1);
+
+                                return (
+                                  <TaskFormModal
+                                    key={task.id}
+                                    profiles={profiles}
+                                    projects={projects}
+                                    availableTasks={tasks}
+                                    task={task}
+                                    initialMode="view"
+                                    redirectPath="/tasks"
+                                    triggerVariant="ghost"
+                                    triggerSize="sm"
+                                    triggerAriaLabel={`View task ${task.title}`}
+                                    triggerTitle={`View task ${task.title}`}
+                                    triggerClassName="h-auto w-full cursor-pointer flex-col items-start rounded-xl p-3 text-left shadow-sm transition-[filter,box-shadow,transform] hover:brightness-95 hover:shadow-md"
+                                    triggerStyle={{
+                                      backgroundColor: tone.background,
+                                      borderColor,
+                                      color: textColor
+                                    }}
+                                    triggerLabel={
+                                      <>
+                                        <span className="text-sm font-medium" style={{ color: textColor }}>
+                                          {task.title}
+                                        </span>
+                                        <span className="mt-1 text-xs" style={{ color: textColor, opacity: 0.82 }}>
+                                          {task.project?.name ?? "General task"}
+                                        </span>
+                                      </>
+                                    }
+                                  />
+                                );
+                              })()
                             ))}
                           </div>
                         </div>

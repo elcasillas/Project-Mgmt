@@ -54,6 +54,7 @@ export function TaskFormModal({
   triggerVariant,
   triggerSize,
   triggerClassName,
+  triggerStyle,
   initialMode,
   redirectPath
 }: {
@@ -70,6 +71,7 @@ export function TaskFormModal({
   triggerVariant?: "primary" | "secondary" | "ghost" | "danger";
   triggerSize?: "sm" | "md";
   triggerClassName?: string;
+  triggerStyle?: React.CSSProperties;
   initialMode?: "view" | "edit";
   redirectPath?: string;
 }) {
@@ -163,6 +165,7 @@ export function TaskFormModal({
         }
         aria-label={triggerAriaLabel ?? defaultTriggerText}
         title={triggerTitle ?? triggerAriaLabel ?? defaultTriggerText}
+        style={triggerStyle}
       >
         {triggerIconOnly ? (defaultMode === "view" ? <Eye className="h-4 w-4" /> : <Pencil className="h-4 w-4" />) : triggerLabel}
       </Button>

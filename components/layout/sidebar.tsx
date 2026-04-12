@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FolderKanban, LayoutGrid, ListTodo, Settings, ShieldUser, Users } from "lucide-react";
+import { ChartNoAxesGantt, FolderKanban, LayoutGrid, ListTodo, Settings, ShieldUser, Users } from "lucide-react";
 import logo from "@/casibros-white.png";
 import { NAV_ITEMS } from "@/lib/data/constants";
 import { cn } from "@/lib/utils/cn";
@@ -12,6 +12,7 @@ const icons = {
   Dashboard: LayoutGrid,
   Projects: FolderKanban,
   Tasks: ListTodo,
+  "Gantt Chart": ChartNoAxesGantt,
   Users: ShieldUser,
   Team: Users,
   Settings: Settings

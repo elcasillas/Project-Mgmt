@@ -21,6 +21,7 @@ import { saveTaskAction } from "@/lib/actions/workspace";
 import type { Profile, Project, Task } from "@/lib/types/domain";
 
 type ModalMode = "view" | "edit" | "create";
+const TASK_MODAL_PANEL_CLASS = "max-w-4xl p-4 sm:p-6 lg:p-8";
 
 function DetailField({
   label,
@@ -76,6 +77,7 @@ export function TaskFormModal({
   const [open, setOpen] = useState(false);
   const defaultMode: ModalMode = task ? (initialMode ?? "edit") : "create";
   const [modalMode, setModalMode] = useState<ModalMode>(defaultMode);
+  const [returnToViewOnEditExit, setReturnToViewOnEditExit] = useState(defaultMode === "view");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState(task?.project_id ?? initialProjectId ?? "");
@@ -83,10 +85,19 @@ export function TaskFormModal({
   const [dependencyQuery, setDependencyQuery] = useState("");
   const defaultTriggerText = typeof triggerLabel === "string" ? triggerLabel : undefined;
   const formRef = useRef<HTMLFormElement>(null);
+  const handleModalDismiss = () => {
+    setError(null);
+    if (modalMode === "edit" && task && returnToViewOnEditExit) {
+      setModalMode("view");
+      return;
+    }
+
+    setOpen(false);
+  };
   const { confirmOpen, requestClose, confirmLeave, stay, markClean } = useUnsavedChangesGuard({
     formRef,
     open: open && modalMode === "edit",
-    onDiscard: () => setOpen(false)
+    onDiscard: handleModalDismiss
   });
   const selectedProject = projects.find((projectOption) => projectOption.id === selectedProjectId);
   const dependencyNames = task ? resolveTaskDependencyNames(task, availableTasks) : [];
@@ -114,6 +125,7 @@ export function TaskFormModal({
     }
 
     setModalMode(defaultMode);
+    setReturnToViewOnEditExit(defaultMode === "view");
     setSelectedProjectId(task?.project_id ?? initialProjectId ?? "");
     setSelectedDependencyIds(task?.dependency_ids ?? []);
     setDependencyQuery("");
@@ -139,6 +151,7 @@ export function TaskFormModal({
       <Button
         onClick={() => {
           setModalMode(defaultMode);
+          setReturnToViewOnEditExit(defaultMode === "view");
           setOpen(true);
         }}
         variant={triggerVariant ?? (task ? "secondary" : "primary")}
@@ -162,7 +175,7 @@ export function TaskFormModal({
             ? "Review task ownership, timing, dependencies, and project linkage."
             : "Shape scope, ownership, and timing in one focused workflow."
         }
-        panelClassName={modalMode === "view" ? "max-w-4xl p-4 sm:p-6 lg:p-8" : undefined}
+        panelClassName={TASK_MODAL_PANEL_CLASS}
         headerActions={
           task && modalMode === "view" ? (
             <Button
@@ -171,7 +184,10 @@ export function TaskFormModal({
               className="bg-[rgba(255,255,255,0.72)]"
               aria-label="Edit Task"
               title="Edit Task"
-              onClick={() => setModalMode("edit")}
+              onClick={() => {
+                setReturnToViewOnEditExit(true);
+                setModalMode("edit");
+              }}
             >
               <Pencil className="h-4 w-4" />
             </Button>
@@ -482,18 +498,24 @@ export function TaskFormModal({
                     const formData = new FormData(formRef.current);
                     startTransition(async () => {
                       setError(null);
-                      const result = await saveTaskAction(formData);
-                      if (!result?.ok) {
-                        setError(result?.message || "Unable to save task.");
-                        return;
-                      }
-                      markClean();
-                      setOpen(false);
-                      if (redirectPath) {
-                        router.push(`${redirectPath}?success=${encodeURIComponent(result.message)}` as Route);
-                      }
+                    const result = await saveTaskAction(formData);
+                    if (!result?.ok) {
+                      setError(result?.message || "Unable to save task.");
+                      return;
+                    }
+                    markClean();
+                    if (task && returnToViewOnEditExit) {
+                      setModalMode("view");
                       router.refresh();
-                    });
+                      return;
+                    }
+
+                    setOpen(false);
+                    if (redirectPath) {
+                      router.push(`${redirectPath}?success=${encodeURIComponent(result.message)}` as Route);
+                    }
+                    router.refresh();
+                  });
                   }}
                 >
                   {isPending ? "Saving..." : task ? "Save" : "Create task"}

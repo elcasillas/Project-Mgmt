@@ -35,15 +35,17 @@ export function TasksView({
   profiles,
   projects,
   attachments,
-  selectedTaskId
+  selectedTaskId,
+  initialView = "table"
 }: {
   tasks: Task[];
   profiles: Profile[];
   projects: Project[];
   attachments: Attachment[];
   selectedTaskId?: string;
+  initialView?: ViewMode;
 }) {
-  const [view, setView] = useState<ViewMode>("table");
+  const [view, setView] = useState<ViewMode>(initialView);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [priority, setPriority] = useState("All");

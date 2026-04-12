@@ -14,6 +14,7 @@ export const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/projects", label: "Projects" },
   { href: "/tasks", label: "Tasks" },
+  { href: "/calendar", label: "Calendar" },
   { href: "/gantt", label: "Gantt Chart" },
   { href: "/users", label: "Users" },
   { href: "/team", label: "Team" },

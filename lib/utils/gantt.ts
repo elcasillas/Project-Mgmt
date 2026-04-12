@@ -38,7 +38,7 @@ export type GanttTimelineSegment = {
 };
 
 export const GANTT_ROW_HEIGHT = 76;
-export const GANTT_LEFT_PANEL_WIDTH = 760;
+export const GANTT_LEFT_PANEL_WIDTH = 520;
 
 const SCALE_DAY_WIDTH: Record<GanttScale, number> = {
   day: 44,

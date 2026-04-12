@@ -7,7 +7,7 @@ import { ConfirmActionButton } from "@/components/shared/confirm-action-button";
 import { TaskFormModal } from "@/components/tasks/task-form-modal";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { formatDate } from "@/lib/utils/format";
+import { formatTaskDate } from "@/lib/utils/task-dates";
 import { sortTasksByDueDate, type DueDateSortDirection } from "@/lib/utils/task-sorting";
 import { resolveTaskDependencyNames } from "@/lib/utils/task-dependencies";
 import type { Profile, Project, Task } from "@/lib/types/domain";
@@ -109,7 +109,7 @@ export function TaskTable({
                     <Badge value={task.priority} />
                   </td>
                   <td className="px-6 py-4 align-top text-slate-600">{task.assignee?.full_name ?? "Unassigned"}</td>
-                  <td className="px-6 py-4 align-top text-slate-600">{formatDate(task.due_date)}</td>
+                  <td className="px-6 py-4 align-top text-slate-600">{formatTaskDate(task.due_date)}</td>
                   <td className="px-6 py-4 align-top">
                     <div className="flex gap-2">
                       <TaskFormModal

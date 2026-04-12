@@ -15,7 +15,7 @@ import { FormField } from "@/components/shared/form-field";
 import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 import { TASK_PRIORITIES, TASK_STATUSES } from "@/lib/data/constants";
 import { cn } from "@/lib/utils/cn";
-import { formatDate } from "@/lib/utils/format";
+import { formatTaskDate, getTaskDateInputValue } from "@/lib/utils/task-dates";
 import { resolveTaskDependencyNames } from "@/lib/utils/task-dependencies";
 import { saveTaskAction } from "@/lib/actions/workspace";
 import type { Profile, Project, Task } from "@/lib/types/domain";
@@ -217,8 +217,8 @@ export function TaskFormModal({
                   <DetailField label="Reporter" value={task.reporter?.full_name ?? "Not set"} />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <DetailField label="Start date" value={task.start_date ? formatDate(task.start_date) : "Not set"} />
-                  <DetailField label="Due date" value={task.due_date ? formatDate(task.due_date) : "Not set"} />
+                  <DetailField label="Start date" value={formatTaskDate(task.start_date)} />
+                  <DetailField label="Due date" value={formatTaskDate(task.due_date)} />
                 </div>
               </section>
 
@@ -385,10 +385,10 @@ export function TaskFormModal({
                   </Select>
                 </FormField>
                 <FormField label="Start date">
-                  <Input name="start_date" type="date" defaultValue={task?.start_date ?? ""} />
+                  <Input name="start_date" type="date" defaultValue={getTaskDateInputValue(task?.start_date)} />
                 </FormField>
                 <FormField label="Due date">
-                  <Input name="due_date" type="date" defaultValue={task?.due_date ?? ""} />
+                  <Input name="due_date" type="date" defaultValue={getTaskDateInputValue(task?.due_date)} />
                 </FormField>
                 <FormField label="Estimated hours">
                   <Input name="estimated_hours" type="number" step="0.5" defaultValue={task?.estimated_hours ?? ""} />

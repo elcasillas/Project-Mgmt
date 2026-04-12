@@ -18,21 +18,11 @@ export function GanttTaskBar({
   dependencyNames: string[];
 }) {
   const tone = getStatusTone(task.status);
-  const tooltipLabel = [
-    `Task: ${task.title}`,
-    `Project: ${task.project?.name ?? "No project"}`,
-    `Assignee: ${task.assignee?.full_name ?? "Unassigned"}`,
-    `Start Date: ${formatTaskDate(task.start_date)}`,
-    `Due Date: ${formatTaskDate(task.due_date)}`,
-    `Status: ${task.status}`,
-    `Progress: ${task.progressValue}%`,
-    `Dependencies: ${dependencyNames.length ? dependencyNames.join(", ") : "None"}`
-  ].join("\n");
 
   if (task.isMilestone) {
     return (
       <div className="absolute inset-y-0 flex items-center" style={{ left, width }}>
-        <div className="group relative flex items-center" title={tooltipLabel}>
+        <div className="group relative flex items-center">
           <div
             className="h-4 w-4 rotate-45 rounded-[4px] border shadow-[rgba(0,0,0,0.12)_0px_8px_20px]"
             style={{ backgroundColor: tone.foreground, borderColor: tone.foreground }}
@@ -55,7 +45,7 @@ export function GanttTaskBar({
 
   return (
     <div className="absolute inset-y-0 flex items-center" style={{ left, width }}>
-      <div className="group relative w-full" title={tooltipLabel}>
+      <div className="group relative w-full">
         <div
           className="relative h-9 overflow-hidden rounded-full border shadow-[rgba(0,0,0,0.08)_0px_10px_24px]"
           style={{ backgroundColor: tone.background, borderColor: tone.foreground }}

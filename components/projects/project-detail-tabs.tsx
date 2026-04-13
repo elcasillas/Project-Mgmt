@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { addCommentAction, deleteAttachmentAction } from "@/lib/actions/workspace";
 import { ConfirmActionButton } from "@/components/shared/confirm-action-button";
 import { AttachmentUploader } from "@/components/shared/attachment-uploader";
-import { TasksCalendar } from "@/components/tasks/tasks-calendar";
 import { TaskFormModal } from "@/components/tasks/task-form-modal";
 import { TaskTable } from "@/components/tasks/task-table";
 import { AvatarGroup } from "@/components/ui/avatar-group";
@@ -17,7 +16,7 @@ import { canManageTasks } from "@/lib/utils/permissions";
 import { formatDate, formatRelative } from "@/lib/utils/format";
 import type { Attachment, Comment, Project, Task, ActivityLog, Profile, UserRole } from "@/lib/types/domain";
 
-type Tab = "Overview" | "Tasks" | "Calendar" | "Team" | "Activity" | "Files";
+type Tab = "Overview" | "Tasks" | "Team" | "Activity" | "Files";
 
 export function ProjectDetailTabs({
   project,
@@ -46,7 +45,7 @@ export function ProjectDetailTabs({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          {(["Overview", "Tasks", "Calendar", "Team", "Activity", "Files"] as Tab[]).map((item) => (
+          {(["Overview", "Tasks", "Team", "Activity", "Files"] as Tab[]).map((item) => (
             <Button key={item} variant={tab === item ? "primary" : "secondary"} size="sm" onClick={() => setTab(item)}>
               {item}
             </Button>
@@ -129,18 +128,6 @@ export function ProjectDetailTabs({
           projects={projects}
           canEditTasks={canEditTasks}
           redirectPath={`/projects/${project.id}`}
-        />
-      ) : null}
-
-      {tab === "Calendar" ? (
-        <TasksCalendar
-          tasks={tasks}
-          profiles={profiles}
-          projects={projects}
-          availableTasks={tasks}
-          redirectPath={`/projects/${project.id}`}
-          title="Project calendar"
-          description="Review this project's task timing by due date and open work details directly from the monthly schedule."
         />
       ) : null}
 

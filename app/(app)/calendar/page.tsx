@@ -37,6 +37,8 @@ export default async function CalendarPage({
         attachments={attachments}
         selectedTaskId={params.task}
         initialView="calendar"
+        showViewSwitcher={false}
+        showCreateTask={false}
       />
     </div>
   );

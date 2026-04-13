@@ -23,7 +23,10 @@ export function TasksView({
   projects,
   attachments,
   selectedTaskId,
-  initialView = "table"
+  initialView = "table",
+  availableViews = ["table", "kanban", "calendar"],
+  showViewSwitcher = true,
+  showCreateTask = true
 }: {
   tasks: Task[];
   profiles: Profile[];
@@ -31,6 +34,9 @@ export function TasksView({
   attachments: Attachment[];
   selectedTaskId?: string;
   initialView?: ViewMode;
+  availableViews?: ViewMode[];
+  showViewSwitcher?: boolean;
+  showCreateTask?: boolean;
 }) {
   const [view, setView] = useState<ViewMode>(initialView);
   const [query, setQuery] = useState("");
@@ -108,12 +114,16 @@ export function TasksView({
           </Select>
         </div>
         <div className="flex gap-2">
-          {(["table", "kanban", "calendar"] as ViewMode[]).map((mode) => (
-            <Button key={mode} variant={view === mode ? "primary" : "secondary"} size="sm" onClick={() => setView(mode)}>
-              {mode[0].toUpperCase() + mode.slice(1)}
-            </Button>
-          ))}
-          <TaskFormModal profiles={profiles} projects={projects} availableTasks={tasks} redirectPath="/tasks" triggerSize="sm" />
+          {showViewSwitcher
+            ? availableViews.map((mode) => (
+                <Button key={mode} variant={view === mode ? "primary" : "secondary"} size="sm" onClick={() => setView(mode)}>
+                  {mode[0].toUpperCase() + mode.slice(1)}
+                </Button>
+              ))
+            : null}
+          {showCreateTask ? (
+            <TaskFormModal profiles={profiles} projects={projects} availableTasks={tasks} redirectPath="/tasks" triggerSize="sm" />
+          ) : null}
         </div>
       </div>
 

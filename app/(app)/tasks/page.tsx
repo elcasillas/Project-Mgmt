@@ -36,6 +36,7 @@ export default async function TasksPage({
         profiles={profiles}
         attachments={attachments}
         selectedTaskId={params.task}
+        availableViews={["table", "kanban"]}
       />
     </div>
   );

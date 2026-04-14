@@ -125,6 +125,7 @@ export function TaskFormModal({
   const formRef = useRef<HTMLFormElement>(null);
   const closeSourceRef = useRef("initial");
   const skipUnsavedWarningRef = useRef(false);
+  const wasOpenRef = useRef(false);
   const formKey = `${activeTask?.id ?? "new"}:${activeTask?.updated_at ?? "draft"}:${modalMode}`;
   const addPurchaseItem = () => {
     setPurchaseItems((current) => [...current, createEmptyPurchaseItem()]);
@@ -226,19 +227,25 @@ export function TaskFormModal({
 
   useEffect(() => {
     if (!open) {
+      wasOpenRef.current = false;
       closeSourceRef.current = "closed";
       skipUnsavedWarningRef.current = false;
       return;
     }
 
+    if (wasOpenRef.current) {
+      return;
+    }
+
+    wasOpenRef.current = true;
     setModalMode(defaultMode);
     setReturnToViewOnEditExit(defaultMode === "view");
-    setSelectedProjectId(activeTask?.project_id ?? initialProjectId ?? "");
-    setSelectedDependencyIds(activeTask?.dependency_ids ?? []);
-    setPurchaseItems(activeTask?.purchaseItems?.length ? activeTask.purchaseItems : [createEmptyPurchaseItem()]);
+    setSelectedProjectId((persistedTask ?? task)?.project_id ?? initialProjectId ?? "");
+    setSelectedDependencyIds((persistedTask ?? task)?.dependency_ids ?? []);
+    setPurchaseItems((persistedTask ?? task)?.purchaseItems?.length ? (persistedTask ?? task)!.purchaseItems : [createEmptyPurchaseItem()]);
     setDependencyQuery("");
     setError(null);
-  }, [activeTask, defaultMode, initialProjectId, open]);
+  }, [open, defaultMode, initialProjectId, persistedTask, task]);
 
   useEffect(() => {
     logTaskModalDebug("TASK_MODAL_RENDER", {

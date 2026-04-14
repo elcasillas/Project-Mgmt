@@ -356,16 +356,22 @@ export function TaskFormModal({
             <section className="rounded-[12px] bg-[#1d1d1f] px-4 py-4 text-white sm:px-5 sm:py-5">
               <div className="min-w-0">
                 <p className="text-[12px] font-semibold uppercase tracking-[0.22em] text-white/55">Task overview</p>
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <Badge value={activeTask.status} className="px-2.5 py-0.5 text-[11px]" />
-                  <Badge value={activeTask.priority} className="px-2.5 py-0.5 text-[11px]" />
-                </div>
                 <h3 className="mt-3 text-[24px] font-semibold leading-[1.12] tracking-[-0.02em] break-words sm:text-[28px]">
                   {activeTask.title}
                 </h3>
                 <p className="mt-2 max-w-3xl text-[14px] leading-[1.45] tracking-[-0.01em] text-white/78">
                   {activeTask.description || "No description provided."}
                 </p>
+                <div className="mt-3 flex flex-col gap-2.5 pt-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[12px] font-medium tracking-[-0.01em] text-white/65">Status:</span>
+                    <Badge value={activeTask.status} className="px-2.5 py-0.5 text-[11px]" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[12px] font-medium tracking-[-0.01em] text-white/65">Priority:</span>
+                    <Badge value={activeTask.priority} className="px-2.5 py-0.5 text-[11px]" />
+                  </div>
+                </div>
               </div>
             </section>
 

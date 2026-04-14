@@ -79,9 +79,9 @@ export function ProjectsView({
       </div>
 
       {view === "grid" ? (
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2">
           {filteredProjects.map((project) => (
-            <Card key={project.id} className="space-y-5">
+            <Card key={project.id} className="w-full space-y-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <Link href={`/projects/${project.id}`} className="block break-words text-lg font-semibold text-slate-950">

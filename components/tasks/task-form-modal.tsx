@@ -97,6 +97,7 @@ export function TaskFormModal({
   const [returnToViewOnEditExit, setReturnToViewOnEditExit] = useState(defaultMode === "view");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [skipUnsavedWarning, setSkipUnsavedWarning] = useState(false);
   const activeTask = persistedTask ?? task;
   const [selectedProjectId, setSelectedProjectId] = useState(activeTask?.project_id ?? initialProjectId ?? "");
   const [selectedDependencyIds, setSelectedDependencyIds] = useState<string[]>(activeTask?.dependency_ids ?? []);
@@ -131,7 +132,7 @@ export function TaskFormModal({
     setOpen(false);
   };
   const handleRequestClose = () => {
-    if (modalMode !== "edit") {
+    if (modalMode !== "edit" || skipUnsavedWarning) {
       handleModalDismiss();
       return;
     }
@@ -170,6 +171,18 @@ export function TaskFormModal({
 
   useEffect(() => {
     if (!open) {
+      setSkipUnsavedWarning(false);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (modalMode !== "edit") {
+      setSkipUnsavedWarning(false);
+    }
+  }, [modalMode]);
+
+  useEffect(() => {
+    if (!open) {
       return;
     }
 
@@ -181,6 +194,25 @@ export function TaskFormModal({
     setDependencyQuery("");
     setError(null);
   }, [activeTask, defaultMode, initialProjectId, open]);
+
+  useEffect(() => {
+    if (!open || modalMode !== "edit" || !skipUnsavedWarning || !formRef.current) {
+      return;
+    }
+
+    const form = formRef.current;
+    const clearSkipUnsavedWarning = () => {
+      setSkipUnsavedWarning(false);
+    };
+
+    form.addEventListener("input", clearSkipUnsavedWarning);
+    form.addEventListener("change", clearSkipUnsavedWarning);
+
+    return () => {
+      form.removeEventListener("input", clearSkipUnsavedWarning);
+      form.removeEventListener("change", clearSkipUnsavedWarning);
+    };
+  }, [modalMode, open, skipUnsavedWarning]);
 
   useEffect(() => {
     if (!selectedProjectId) {
@@ -626,6 +658,7 @@ export function TaskFormModal({
                         setError(result?.message || "Unable to save task.");
                         return;
                       }
+                      setSkipUnsavedWarning(true);
                       markCleanUntilNextChange();
                       if (result.task) {
                         setPersistedTask(result.task);

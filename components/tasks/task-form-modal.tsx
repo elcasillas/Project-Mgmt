@@ -414,12 +414,6 @@ export function TaskFormModal({
                   }
                 />
                 <DetailField
-                  label="Estimated Hours"
-                  value={
-                    activeTask.estimated_hours == null ? "Not set" : activeTask.estimated_hours
-                  }
-                />
-                <DetailField
                   label="Purchase Items"
                   value={
                     activeTask.purchaseItems?.length ? (
@@ -559,9 +553,6 @@ export function TaskFormModal({
                 </FormField>
                 <FormField label="Due date">
                   <Input name="due_date" type="date" defaultValue={getTaskDateInputValue(activeTask?.due_date)} />
-                </FormField>
-                <FormField label="Estimated hours">
-                  <Input name="estimated_hours" type="number" step="0.5" defaultValue={activeTask?.estimated_hours ?? ""} />
                 </FormField>
               </div>
             </section>

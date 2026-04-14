@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, Pencil } from "lucide-react";
+import { Eye, Pencil, Plus, Trash } from "lucide-react";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
@@ -18,10 +18,17 @@ import { cn } from "@/lib/utils/cn";
 import { formatTaskDate, getTaskDateInputValue } from "@/lib/utils/task-dates";
 import { resolveTaskDependencyNames } from "@/lib/utils/task-dependencies";
 import { saveTaskAction } from "@/lib/actions/workspace";
-import type { Profile, Project, Task } from "@/lib/types/domain";
+import type { Profile, Project, Task, TaskPurchaseItem } from "@/lib/types/domain";
 
 type ModalMode = "view" | "edit" | "create";
 const TASK_MODAL_PANEL_CLASS = "max-w-4xl";
+
+function createEmptyPurchaseItem(): TaskPurchaseItem {
+  return {
+    id: crypto.randomUUID(),
+    name: ""
+  };
+}
 
 function DetailField({
   label,
@@ -91,9 +98,19 @@ export function TaskFormModal({
   const [error, setError] = useState<string | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState(task?.project_id ?? initialProjectId ?? "");
   const [selectedDependencyIds, setSelectedDependencyIds] = useState<string[]>(task?.dependency_ids ?? []);
+  const [purchaseItems, setPurchaseItems] = useState<TaskPurchaseItem[]>(task?.purchaseItems?.length ? task.purchaseItems : [createEmptyPurchaseItem()]);
   const [dependencyQuery, setDependencyQuery] = useState("");
   const defaultTriggerText = typeof triggerLabel === "string" ? triggerLabel : undefined;
   const formRef = useRef<HTMLFormElement>(null);
+  const addPurchaseItem = () => {
+    setPurchaseItems((current) => [...current, createEmptyPurchaseItem()]);
+  };
+  const updatePurchaseItem = (itemId: string, name: string) => {
+    setPurchaseItems((current) => current.map((entry) => (entry.id === itemId ? { ...entry, name } : entry)));
+  };
+  const removePurchaseItem = (itemId: string) => {
+    setPurchaseItems((current) => (current.length === 1 ? [createEmptyPurchaseItem()] : current.filter((entry) => entry.id !== itemId)));
+  };
   const openModal = () => {
     setModalMode(defaultMode);
     setReturnToViewOnEditExit(defaultMode === "view");
@@ -142,6 +159,7 @@ export function TaskFormModal({
     setReturnToViewOnEditExit(defaultMode === "view");
     setSelectedProjectId(task?.project_id ?? initialProjectId ?? "");
     setSelectedDependencyIds(task?.dependency_ids ?? []);
+    setPurchaseItems(task?.purchaseItems?.length ? task.purchaseItems : [createEmptyPurchaseItem()]);
     setDependencyQuery("");
     setError(null);
   }, [defaultMode, initialProjectId, open, task]);
@@ -286,6 +304,22 @@ export function TaskFormModal({
                       : `${task.actual_hours ?? 0} / ${task.estimated_hours ?? 0}`
                   }
                 />
+                <DetailField
+                  label="Purchase Items"
+                  value={
+                    task.purchaseItems?.length ? (
+                      <ul className="space-y-2 text-[15px] font-medium leading-[1.45] text-[#1d1d1f]">
+                        {task.purchaseItems.map((item) => (
+                          <li key={item.id} className="rounded-[10px] bg-[#f5f5f7] px-3 py-2">
+                            {item.name}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      "No purchase items added"
+                    )
+                  }
+                />
               </section>
             </div>
 
@@ -421,6 +455,49 @@ export function TaskFormModal({
 
             <section className={sectionClassName}>
               <div className="mb-5 space-y-1">
+                <h3 className={sectionHeadingClassName}>Purchase Items</h3>
+                <p className="text-[14px] leading-[1.43] tracking-[-0.01em] text-[rgba(29,29,31,0.56)]">
+                  Track anything that may need to be bought before the task can be completed.
+                </p>
+              </div>
+              <input type="hidden" name="purchase_items" value={JSON.stringify(purchaseItems)} />
+              <div className="space-y-3">
+                {purchaseItems.map((item, index) => (
+                  <div key={item.id} className="flex items-start gap-3">
+                    <Input
+                      value={item.name}
+                      onChange={(event) => updatePurchaseItem(item.id, event.target.value)}
+                      placeholder="Enter item to purchase"
+                      aria-label={`Purchase item ${index + 1}`}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      aria-label={`Remove purchase item ${index + 1}`}
+                      title="Remove item"
+                      className="mt-1 h-10 w-10 shrink-0 rounded-[11px] border border-[rgba(29,29,31,0.08)] bg-white p-0 text-slate-600 hover:bg-slate-50"
+                      onClick={() => removePurchaseItem(item.id)}
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  className="w-full sm:w-auto"
+                  onClick={addPurchaseItem}
+                >
+                  <Plus className="h-4 w-4" />
+                  + Add Item
+                </Button>
+              </div>
+            </section>
+
+            <section className={sectionClassName}>
+              <div className="mb-5 space-y-1">
                 <h3 className={sectionHeadingClassName}>Dependencies</h3>
                 <p className="text-[14px] leading-[1.43] tracking-[-0.01em] text-[rgba(29,29,31,0.56)]">
                   Define the tasks that must land first so execution order stays explicit.
@@ -519,24 +596,24 @@ export function TaskFormModal({
                     const formData = new FormData(formRef.current);
                     startTransition(async () => {
                       setError(null);
-                    const result = await saveTaskAction(formData);
-                    if (!result?.ok) {
-                      setError(result?.message || "Unable to save task.");
-                      return;
-                    }
-                    markClean();
-                    if (task && returnToViewOnEditExit) {
-                      setModalMode("view");
-                      router.refresh();
-                      return;
-                    }
+                      const result = await saveTaskAction(formData);
+                      if (!result?.ok) {
+                        setError(result?.message || "Unable to save task.");
+                        return;
+                      }
+                      markClean();
+                      if (task && returnToViewOnEditExit) {
+                        setModalMode("view");
+                        router.refresh();
+                        return;
+                      }
 
-                    setOpen(false);
-                    if (redirectPath) {
-                      router.push(`${redirectPath}?success=${encodeURIComponent(result.message)}` as Route);
-                    }
-                    router.refresh();
-                  });
+                      setOpen(false);
+                      if (redirectPath) {
+                        router.push(`${redirectPath}?success=${encodeURIComponent(result.message)}` as Route);
+                      }
+                      router.refresh();
+                    });
                   }}
                 >
                   {isPending ? "Saving..." : task ? "Save" : "Create task"}

@@ -11,6 +11,35 @@ function splitCsv(value: string) {
     .filter(Boolean);
 }
 
+function normalizeTaskPurchaseItems(value: FormDataEntryValue | null) {
+  if (typeof value !== "string" || !value.trim()) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(value);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed.flatMap((item) => {
+      if (typeof item !== "object" || item === null) {
+        return [];
+      }
+
+      const id = typeof item.id === "string" && item.id.trim() ? item.id.trim() : crypto.randomUUID();
+      const name = typeof item.name === "string" ? item.name.trim() : "";
+      if (!name) {
+        return [];
+      }
+
+      return [{ id, name }];
+    });
+  } catch {
+    return [];
+  }
+}
+
 async function requireViewer() {
   const supabase = await createClient();
   const {
@@ -129,6 +158,7 @@ export async function archiveProjectAction(formData: FormData) {
 export async function saveTaskAction(formData: FormData) {
   const { supabase, user } = await requireViewer();
   const taskId = String(formData.get("id") || "");
+  const purchaseItems = normalizeTaskPurchaseItems(formData.get("purchase_items"));
   const payload = {
     project_id: String(formData.get("project_id") || "") || null,
     title: String(formData.get("title") || ""),
@@ -140,7 +170,8 @@ export async function saveTaskAction(formData: FormData) {
     start_date: String(formData.get("start_date") || "") || null,
     due_date: String(formData.get("due_date") || "") || null,
     estimated_hours: Number(formData.get("estimated_hours") || 0) || null,
-    actual_hours: Number(formData.get("actual_hours") || 0) || null
+    actual_hours: Number(formData.get("actual_hours") || 0) || null,
+    purchase_items: purchaseItems
   };
 
   let savedTaskId = taskId;

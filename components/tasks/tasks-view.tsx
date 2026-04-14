@@ -181,6 +181,20 @@ export function TasksView({
                 </p>
               </div>
             </div>
+            <div className="rounded-2xl bg-slate-50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Purchase Items</p>
+              {selectedTask.purchaseItems?.length ? (
+                <ul className="mt-3 space-y-2 text-sm text-slate-700">
+                  {selectedTask.purchaseItems.map((item) => (
+                    <li key={item.id} className="rounded-xl bg-white px-3 py-2">
+                      {item.name}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-2 font-medium text-slate-900">No purchase items added</p>
+              )}
+            </div>
           </Card>
           <Card className="space-y-5">
             <div>

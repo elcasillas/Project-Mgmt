@@ -5,6 +5,11 @@ export type ProjectPriority = "Low" | "Medium" | "High" | "Critical";
 export type TaskStatus = "Not Started" | "In Progress" | "Blocked" | "In Review" | "Done";
 export type TaskPriority = "Low" | "Medium" | "High" | "Urgent";
 
+export type TaskPurchaseItem = {
+  id: string;
+  name: string;
+};
+
 export type Profile = {
   id: string;
   first_name: string;
@@ -59,6 +64,7 @@ export type Task = {
   reporter?: Profile | null;
   project?: Pick<Project, "id" | "name" | "status" | "priority" | "progress"> | null;
   dependency_ids?: string[];
+  purchaseItems?: TaskPurchaseItem[];
 };
 
 export type Comment = {

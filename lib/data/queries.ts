@@ -12,6 +12,26 @@ import type {
   UserDirectoryEntry
 } from "@/lib/types/domain";
 
+function mapTaskPurchaseItems(value: unknown) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((item) => {
+    if (typeof item !== "object" || item === null) {
+      return [];
+    }
+
+    const id = typeof item.id === "string" ? item.id : "";
+    const name = typeof item.name === "string" ? item.name.trim() : "";
+    if (!id || !name) {
+      return [];
+    }
+
+    return [{ id, name }];
+  });
+}
+
 function serializeError(error: unknown) {
   if (error instanceof Error) {
     return {
@@ -125,7 +145,8 @@ function mapTask(row: any): Task {
       : null,
     dependency_ids: Array.isArray(row.task_dependencies)
       ? row.task_dependencies.map((entry: any) => entry.depends_on_task_id)
-      : []
+      : [],
+    purchaseItems: mapTaskPurchaseItems(row.purchase_items)
   };
 }
 

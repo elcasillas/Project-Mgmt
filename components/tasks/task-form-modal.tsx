@@ -3,7 +3,7 @@
 import { Eye, Pencil, Plus, Trash } from "lucide-react";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ConfirmationDialog } from "@/components/shared/confirmation-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -105,7 +105,7 @@ export function TaskFormModal({
   const [persistedTask, setPersistedTask] = useState<Task | undefined>(task);
   const [modalMode, setModalMode] = useState<ModalMode>(defaultMode);
   const [returnToViewOnEditExit, setReturnToViewOnEditExit] = useState(defaultMode === "view");
-  const [isPending, startTransition] = useTransition();
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isActuallyDirty, setIsActuallyDirty] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -153,6 +153,14 @@ export function TaskFormModal({
     setOpen(false);
   };
   const handleRequestClose = () => {
+    if (process.env.NODE_ENV !== "production") {
+      console.info("[TaskFormModal] close requested", {
+        modalMode,
+        isActuallyDirty,
+        activeTaskId: activeTask?.id ?? null,
+        warningSource: modalMode === "edit" && isActuallyDirty ? "task-form-modal" : "none"
+      });
+    }
     if (modalMode !== "edit" || !isActuallyDirty) {
       handleModalDismiss();
       return;
@@ -649,9 +657,9 @@ export function TaskFormModal({
                 </Button>
                 <Button
                   type="button"
-                  disabled={isPending}
+                  disabled={isSaving}
                   className="max-sm:w-full"
-                  onClick={() => {
+                  onClick={async () => {
                     if (!formRef.current) {
                       return;
                     }
@@ -663,12 +671,19 @@ export function TaskFormModal({
                         purchaseItems
                       });
                     }
-                    startTransition(async () => {
+                    try {
+                      setIsSaving(true);
                       setError(null);
                       const result = await saveTaskAction(formData);
                       if (!result?.ok) {
                         setError(result?.message || "Unable to save task.");
                         return;
+                      }
+                      if (process.env.NODE_ENV !== "production") {
+                        console.info("[TaskFormModal] save response", {
+                          activeTaskId: activeTask?.id ?? null,
+                          resultTask: result.task
+                        });
                       }
                       if (result.task) {
                         setPersistedTask(result.task);
@@ -678,15 +693,23 @@ export function TaskFormModal({
                         }
                       }
                       markTaskFormClean();
+                      if (process.env.NODE_ENV !== "production") {
+                        console.info("[TaskFormModal] baseline reset after save", {
+                          activeTaskId: result.task?.id ?? activeTask?.id ?? null,
+                          isActuallyDirty: false
+                        });
+                      }
                       setOpen(false);
                       if (redirectPath) {
                         router.push(`${redirectPath}?success=${encodeURIComponent(result.message)}` as Route);
                       }
                       router.refresh();
-                    });
+                    } finally {
+                      setIsSaving(false);
+                    }
                   }}
                 >
-                  {isPending ? "Saving..." : activeTask ? "Save" : "Create task"}
+                  {isSaving ? "Saving..." : activeTask ? "Save" : "Create task"}
                 </Button>
               </div>
             </div>

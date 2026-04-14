@@ -53,23 +53,28 @@ export function TaskTable({
             <Card key={task.id} className={task.id === selectedTaskId ? "border-sky-200 bg-sky-50/50 p-4" : "p-4"}>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="break-words font-medium text-slate-950">{task.title}</p>
-                  <p className="mt-1 text-sm text-slate-500">{task.project?.name ?? "No project"}</p>
-                </div>
-                <div className="flex shrink-0 gap-2">
                   <TaskFormModal
                     profiles={profiles}
                     projects={projects}
                     availableTasks={allTasks}
                     task={task}
-                    triggerLabel="View"
-                    triggerAriaLabel="View Task"
-                    triggerTitle="View Task"
-                    triggerIconOnly
-                    triggerClassName={taskActionButtonClassName}
                     initialMode="view"
                     redirectPath={redirectPath}
+                    renderTrigger={({ open, ariaLabel, title }) => (
+                      <button
+                        type="button"
+                        onClick={open}
+                        aria-label={ariaLabel ?? `View task ${task.title}`}
+                        title={title ?? `View task ${task.title}`}
+                        className="cursor-pointer break-words text-left font-medium text-slate-950 transition hover:text-[#00ADB1] hover:underline focus:outline-none focus:text-[#00ADB1]"
+                      >
+                        {task.title}
+                      </button>
+                    )}
                   />
+                  <p className="mt-1 text-sm text-slate-500">{task.project?.name ?? "No project"}</p>
+                </div>
+                <div className="flex shrink-0 gap-2">
                   {canEditTasks ? (
                     <ConfirmActionButton
                       action={deleteTaskAction}
@@ -161,7 +166,25 @@ export function TaskTable({
               return (
                 <tr key={task.id} className={task.id === selectedTaskId ? "bg-sky-50/70" : ""}>
                   <td className="px-6 py-4 align-top">
-                    <p className="font-medium text-slate-950">{task.title}</p>
+                    <TaskFormModal
+                      profiles={profiles}
+                      projects={projects}
+                      availableTasks={allTasks}
+                      task={task}
+                      initialMode="view"
+                      redirectPath={redirectPath}
+                      renderTrigger={({ open, ariaLabel, title }) => (
+                        <button
+                          type="button"
+                          onClick={open}
+                          aria-label={ariaLabel ?? `View task ${task.title}`}
+                          title={title ?? `View task ${task.title}`}
+                          className="cursor-pointer text-left font-medium text-slate-950 transition hover:text-[#00ADB1] hover:underline focus:outline-none focus:text-[#00ADB1]"
+                        >
+                          {task.title}
+                        </button>
+                      )}
+                    />
                   </td>
                   <td className="px-6 py-4 align-top text-slate-600">{task.project?.name ?? "No project"}</td>
                   <td className="px-6 py-4 align-top">
@@ -191,19 +214,6 @@ export function TaskTable({
                   <td className="px-6 py-4 align-top text-slate-600">{formatTaskDate(task.due_date)}</td>
                   <td className="px-6 py-4 align-top">
                     <div className="flex gap-2">
-                      <TaskFormModal
-                        profiles={profiles}
-                        projects={projects}
-                        availableTasks={allTasks}
-                        task={task}
-                        triggerLabel="View"
-                        triggerAriaLabel="View Task"
-                        triggerTitle="View Task"
-                        triggerIconOnly
-                        triggerClassName={taskActionButtonClassName}
-                        initialMode="view"
-                        redirectPath={redirectPath}
-                      />
                       {canEditTasks ? (
                         <ConfirmActionButton
                           action={deleteTaskAction}

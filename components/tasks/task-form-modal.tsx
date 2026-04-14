@@ -739,7 +739,8 @@ export function TaskFormModal({
                       logTaskModalDebug("TASK_SAVE_SUCCESS_CLOSE", {
                         activeTaskId: result.task?.id ?? activeTask?.id ?? null
                       });
-                      handleRequestClose("save-success");
+                      closeSourceRef.current = "save-success";
+                      setOpen(false);
                       if (redirectPath) {
                         router.push(`${redirectPath}?success=${encodeURIComponent(result.message)}` as Route);
                       }

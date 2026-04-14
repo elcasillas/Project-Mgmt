@@ -238,11 +238,12 @@ export function TaskFormModal({
     }
 
     wasOpenRef.current = true;
+    const taskToInitialize = persistedTask ?? task;
     setModalMode(defaultMode);
     setReturnToViewOnEditExit(defaultMode === "view");
-    setSelectedProjectId((persistedTask ?? task)?.project_id ?? initialProjectId ?? "");
-    setSelectedDependencyIds((persistedTask ?? task)?.dependency_ids ?? []);
-    setPurchaseItems((persistedTask ?? task)?.purchaseItems?.length ? (persistedTask ?? task)!.purchaseItems : [createEmptyPurchaseItem()]);
+    setSelectedProjectId(taskToInitialize?.project_id ?? initialProjectId ?? "");
+    setSelectedDependencyIds(taskToInitialize?.dependency_ids ?? []);
+    setPurchaseItems(taskToInitialize?.purchaseItems?.length ? taskToInitialize.purchaseItems : [createEmptyPurchaseItem()]);
     setDependencyQuery("");
     setError(null);
   }, [open, defaultMode, initialProjectId, persistedTask, task]);

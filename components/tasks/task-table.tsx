@@ -33,6 +33,8 @@ export function TaskTable({
   const taskActionButtonClassName =
     "h-9 w-9 rounded-md border border-gray-200 bg-transparent p-0 text-slate-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#00ADB1]";
   const taskDeleteButtonClassName = `${taskActionButtonClassName} hover:text-red-600 active:text-red-600`;
+  const taskDetailsLinkClassName =
+    "inline-flex max-w-full items-center rounded-full px-2.5 py-1 text-left font-medium text-slate-950 transition-[background-color,color,box-shadow] hover:bg-[#00ADB1]/8 hover:text-[#008c90] focus:outline-none focus:ring-2 focus:ring-[#00ADB1]/30 focus:text-[#008c90]";
   const visibleTasks = useMemo(() => sortTasksByDueDate(tasks, dueDateSort), [dueDateSort, tasks]);
 
   if (!tasks.length) {
@@ -66,7 +68,7 @@ export function TaskTable({
                         onClick={open}
                         aria-label={ariaLabel ?? `Task Details for ${task.title}`}
                         title={title ?? "Task Details"}
-                        className="cursor-pointer break-words text-left font-medium text-slate-950 transition hover:text-[#00ADB1] hover:underline focus:outline-none focus:text-[#00ADB1]"
+                        className={`${taskDetailsLinkClassName} -mx-2.5 -my-1 break-words`}
                       >
                         {task.title}
                       </button>
@@ -179,7 +181,7 @@ export function TaskTable({
                           onClick={open}
                           aria-label={ariaLabel ?? `Task Details for ${task.title}`}
                           title={title ?? "Task Details"}
-                          className="cursor-pointer text-left font-medium text-slate-950 transition hover:text-[#00ADB1] hover:underline focus:outline-none focus:text-[#00ADB1]"
+                          className={`${taskDetailsLinkClassName} -mx-2.5 -my-1`}
                         >
                           {task.title}
                         </button>

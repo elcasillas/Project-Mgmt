@@ -620,7 +620,7 @@ export function TaskFormModal({
                   <Input
                     value={dependencyQuery}
                     onChange={(event) => setDependencyQuery(event.target.value)}
-                    placeholder="Search tasks by name, status, or ID"
+                    placeholder="Search tasks by name or status"
                     disabled={!selectedProjectId || !availableDependencyTasks.length}
                   />
                   {selectedProjectId ? (
@@ -647,11 +647,9 @@ export function TaskFormModal({
                                   );
                                 }}
                               >
-                                <div className="min-w-0">
-                                  <p className="truncate text-sm font-medium text-slate-900">{candidateTask.title}</p>
-                                  <p className="mt-1 text-xs text-slate-500">
-                                    {candidateTask.status} • {candidateTask.id}
-                                  </p>
+                                <div className="flex min-w-0 items-center gap-2 overflow-hidden">
+                                  <span className="truncate text-sm font-medium text-slate-900">{candidateTask.title}</span>
+                                  <Badge value={candidateTask.status} className="shrink-0" />
                                 </div>
                                 <span
                                   className={`ml-4 mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs ${

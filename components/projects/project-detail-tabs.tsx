@@ -64,7 +64,7 @@ export function ProjectDetailTabs({
             triggerTitle="Create Task"
             triggerSize="sm"
             triggerVariant="secondary"
-            triggerClassName="ml-auto"
+            triggerClassName="max-sm:w-full sm:ml-auto"
           />
         ) : null}
       </div>
@@ -134,7 +134,7 @@ export function ProjectDetailTabs({
       {tab === "Team" ? (
         <Card className="space-y-4">
           {(project.members ?? []).map((member) => (
-            <div key={member.id} className="flex items-center justify-between rounded-2xl border border-slate-100 p-4">
+            <div key={member.id} className="flex flex-col gap-3 rounded-2xl border border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="font-medium text-slate-900">{member.full_name}</p>
                 <p className="text-sm text-slate-500">{member.email}</p>
@@ -184,9 +184,9 @@ export function ProjectDetailTabs({
         <Card className="space-y-4">
           {attachments.length ? (
             attachments.map((attachment) => (
-              <div key={attachment.id} className="flex items-center justify-between rounded-2xl border border-slate-100 p-4">
+              <div key={attachment.id} className="flex flex-col gap-3 rounded-2xl border border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="font-medium text-slate-900">{attachment.file_name}</p>
+                  <p className="break-words font-medium text-slate-900">{attachment.file_name}</p>
                   <p className="text-sm text-slate-500">
                     Uploaded by {attachment.uploader?.full_name ?? "Unknown"} on {formatDate(attachment.created_at)}
                   </p>

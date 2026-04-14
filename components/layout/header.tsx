@@ -3,13 +3,10 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
 import { LogOut, Menu, Search } from "lucide-react";
 import { logoutAction } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { NAV_ITEMS } from "@/lib/data/constants";
-import { cn } from "@/lib/utils/cn";
 import {
   normalizeSearchQuery,
   projectMatchesDescription,
@@ -18,10 +15,6 @@ import {
   taskMatchesName
 } from "@/lib/utils/search";
 import type { Profile, Project, Task } from "@/lib/types/domain";
-
-const mobileNavLinkBaseClass = "rounded-full px-4 py-3 text-sm transition-colors";
-const mobileNavLinkInactiveClass = "text-gray-700 dark:text-gray-200 hover:text-black dark:hover:text-white";
-const mobileNavLinkActiveClass = "text-black dark:text-white font-semibold";
 
 function getDescriptionExcerpt(description: string | null | undefined, query: string) {
   const source = (description ?? "").trim();
@@ -221,32 +214,32 @@ export function Header({
   profile,
   workspaceName,
   projects,
-  tasks
+  tasks,
+  onOpenMobileNav
 }: {
   profile: Profile | null;
   workspaceName: string;
   projects: Project[];
   tasks: Task[];
+  onOpenMobileNav: () => void;
 }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const pathname = usePathname();
-
   return (
     <header className="sticky top-0 z-30 border-b border-white/10 bg-[rgba(0,0,0,0.82)] backdrop-blur-[20px] backdrop-saturate-150">
-      <div className="flex items-center gap-4 px-4 py-3 sm:px-6 lg:px-10">
+      <div className="flex items-center gap-3 px-4 py-3 sm:px-6 lg:px-10">
         <button
           type="button"
           className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/12 bg-white/6 text-white lg:hidden"
-          onClick={() => setMobileOpen((value) => !value)}
+          onClick={onOpenMobileNav}
+          aria-label="Open navigation menu"
         >
           <Menu className="h-5 w-5" />
         </button>
         <div className="min-w-0 flex-1">
           <p className="text-[10px] uppercase tracking-[0.24em] text-white/45">{workspaceName}</p>
-          <p className="truncate text-[21px] font-semibold tracking-[-0.02em] text-white">Project Delivery Command Center</p>
+          <p className="truncate text-[18px] font-semibold tracking-[-0.02em] text-white sm:text-[21px]">Project Delivery Command Center</p>
         </div>
         <div className="hidden max-w-md flex-1 lg:block">
-          <HeaderSearch projects={projects} tasks={tasks} onNavigate={() => setMobileOpen(false)} />
+          <HeaderSearch projects={projects} tasks={tasks} onNavigate={() => undefined} />
         </div>
         <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/10 text-sm font-semibold text-white">
           {profile?.full_name
@@ -267,38 +260,22 @@ export function Header({
           </Button>
         </form>
       </div>
-      {mobileOpen ? (
-        <div className="space-y-3 border-t border-slate-200 bg-white px-4 py-4 dark:border-gray-800 dark:bg-gray-900 lg:hidden">
-          <nav className="grid gap-2">
-            {NAV_ITEMS.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  mobileNavLinkBaseClass,
-                  pathname.startsWith(item.href)
-                    ? mobileNavLinkActiveClass
-                    : mobileNavLinkInactiveClass
-                )}
-                onClick={() => setMobileOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-          <HeaderSearch projects={projects} tasks={tasks} mobile onNavigate={() => setMobileOpen(false)} />
-          <form action={logoutAction}>
+      <div className="border-t border-white/10 px-4 py-3 sm:px-6 lg:hidden">
+        <div className="space-y-3">
+          <HeaderSearch projects={projects} tasks={tasks} mobile onNavigate={() => undefined} />
+          <form action={logoutAction} className="sm:hidden">
             <Button
               variant="ghost"
-              className="h-11 w-11 border border-white/10 bg-white/6 px-0 text-white hover:bg-white/10 hover:text-white"
+              className="h-11 w-full border border-white/10 bg-white/6 px-4 text-white hover:bg-white/10 hover:text-white"
               aria-label="Logout"
               title="Logout"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
             </Button>
           </form>
         </div>
-      ) : null}
+      </div>
     </header>
   );
 }

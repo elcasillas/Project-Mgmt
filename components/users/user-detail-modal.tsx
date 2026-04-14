@@ -47,7 +47,7 @@ export function UserDetailModal({ user }: { user: UserDirectoryEntry }) {
           </div>
         </div>
         <div className="mt-6 flex justify-end">
-          <Button variant="secondary" onClick={() => setOpen(false)}>
+          <Button variant="secondary" onClick={() => setOpen(false)} className="max-sm:w-full">
             Close
           </Button>
         </div>

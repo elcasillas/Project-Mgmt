@@ -44,8 +44,87 @@ export function TaskTable({
   }
 
   return (
-    <Card className="overflow-hidden p-0">
-      <div className="overflow-x-auto">
+    <div className="space-y-4">
+      <div className="grid gap-4 md:hidden">
+        {visibleTasks.map((task) => {
+          const dependencyNames = resolveTaskDependencyNames(task, allTasks);
+
+          return (
+            <Card key={task.id} className={task.id === selectedTaskId ? "border-sky-200 bg-sky-50/50 p-4" : "p-4"}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="break-words font-medium text-slate-950">{task.title}</p>
+                  <p className="mt-1 text-sm text-slate-500">{task.project?.name ?? "No project"}</p>
+                </div>
+                <div className="flex shrink-0 gap-2">
+                  <TaskFormModal
+                    profiles={profiles}
+                    projects={projects}
+                    availableTasks={allTasks}
+                    task={task}
+                    triggerLabel="View"
+                    triggerAriaLabel="View Task"
+                    triggerTitle="View Task"
+                    triggerIconOnly
+                    triggerClassName={taskActionButtonClassName}
+                    initialMode="view"
+                    redirectPath={redirectPath}
+                  />
+                  {canEditTasks ? (
+                    <ConfirmActionButton
+                      action={deleteTaskAction}
+                      fields={[{ name: "task_id", value: task.id }]}
+                      variant="ghost"
+                      size="sm"
+                      className={taskDeleteButtonClassName}
+                      aria-label="Delete Task"
+                      title="Delete Task"
+                    >
+                      <Trash className="h-4 w-4" />
+                    </ConfirmActionButton>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Badge value={task.status} />
+                <Badge value={task.priority} />
+              </div>
+
+              <div className="mt-4 grid gap-3 rounded-2xl bg-slate-50 p-3 text-sm text-slate-600">
+                <div className="flex items-start justify-between gap-4">
+                  <span className="text-slate-500">Assignee</span>
+                  <span className="text-right text-slate-900">{task.assignee?.full_name ?? "Unassigned"}</span>
+                </div>
+                <div className="flex items-start justify-between gap-4">
+                  <span className="text-slate-500">Due date</span>
+                  <span className="text-right text-slate-900">{formatTaskDate(task.due_date)}</span>
+                </div>
+                <div className="space-y-2">
+                  <span className="text-slate-500">Dependencies</span>
+                  {dependencyNames.length ? (
+                    <div className="flex flex-wrap gap-2">
+                      {dependencyNames.map((dependencyName) => (
+                        <span
+                          key={`${task.id}:${dependencyName}`}
+                          className="max-w-full rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-slate-600"
+                        >
+                          {dependencyName}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-slate-900">None</span>
+                  )}
+                </div>
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+
+      <Card className="hidden overflow-hidden p-0 md:block">
+        <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-100 text-sm">
           <thead className="bg-slate-50 text-left text-slate-500">
             <tr>
@@ -146,6 +225,7 @@ export function TaskTable({
           </tbody>
         </table>
       </div>
-    </Card>
+      </Card>
+    </div>
   );
 }

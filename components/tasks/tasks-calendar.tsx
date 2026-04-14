@@ -53,6 +53,24 @@ export function TasksCalendar({
     }
     return weeks;
   }, [calendarDays]);
+  const mobileAgenda = useMemo(() => {
+    const inMonthTasks = tasks
+      .filter((task) => task.due_date && isSameMonth(new Date(`${task.due_date}T00:00:00`), visibleMonth))
+      .sort((left, right) => String(left.due_date).localeCompare(String(right.due_date)));
+
+    const groupedDays = new Map<string, Task[]>();
+    inMonthTasks.forEach((task) => {
+      if (!task.due_date) {
+        return;
+      }
+
+      const current = groupedDays.get(task.due_date) ?? [];
+      current.push(task);
+      groupedDays.set(task.due_date, current);
+    });
+
+    return Array.from(groupedDays.entries());
+  }, [tasks, visibleMonth]);
   const weekdayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   return (
@@ -74,7 +92,59 @@ export function TasksCalendar({
           </Button>
         </div>
       </div>
-      <div className="overflow-x-auto">
+      <div className="space-y-4 sm:hidden">
+        {mobileAgenda.length ? (
+          mobileAgenda.map(([date, dayTasks]) => (
+            <div key={date} className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
+              <p className="text-sm font-semibold text-slate-900">{format(new Date(`${date}T00:00:00`), "EEEE, MMM d")}</p>
+              <div className="mt-3 space-y-2">
+                {dayTasks.map((task) => {
+                  const tone = getStatusTone(task.status);
+                  const textColor = getContrastTextColor(tone.background);
+                  const borderColor = darkenColor(tone.background, 0.1);
+
+                  return (
+                    <TaskFormModal
+                      key={task.id}
+                      profiles={profiles}
+                      projects={projects}
+                      availableTasks={availableTasks}
+                      task={task}
+                      initialMode="view"
+                      redirectPath={redirectPath}
+                      triggerVariant="ghost"
+                      triggerSize="sm"
+                      triggerAriaLabel={`View task ${task.title}`}
+                      triggerTitle={`View task ${task.title}`}
+                      triggerClassName="h-auto w-full cursor-pointer flex-col items-start rounded-xl p-3 text-left shadow-sm transition-[filter,box-shadow,transform] hover:brightness-95 hover:shadow-md"
+                      triggerStyle={{
+                        backgroundColor: tone.background,
+                        borderColor,
+                        color: textColor
+                      }}
+                      triggerLabel={
+                        <>
+                          <span className="text-sm font-medium" style={{ color: textColor }}>
+                            {task.title}
+                          </span>
+                          <span className="mt-1 text-xs" style={{ color: textColor, opacity: 0.82 }}>
+                            {task.project?.name ?? "General task"}
+                          </span>
+                        </>
+                      }
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-4 py-6 text-sm text-slate-500">
+            No tasks due in {format(visibleMonth, "MMMM yyyy")}.
+          </div>
+        )}
+      </div>
+      <div className="hidden overflow-x-auto sm:block">
         <div className="min-w-[840px]">
           <div className="grid grid-cols-7 border-b border-slate-100">
             {weekdayLabels.map((label) => (

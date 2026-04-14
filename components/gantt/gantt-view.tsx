@@ -1,9 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { GanttTimelineGrid } from "@/components/gantt/gantt-timeline-grid";
 import { GanttToolbar } from "@/components/gantt/gantt-toolbar";
+import { formatTaskDate } from "@/lib/utils/task-dates";
 import {
   getMonthSegments,
   getScaleSegments,
@@ -95,18 +98,54 @@ export function GanttView({
       </div>
 
       {visibleTasks.length ? (
-        <GanttTimelineGrid
-          tasks={visibleTasks}
-          allTasks={tasks}
-          profiles={profiles}
-          projects={projects}
-          timelineStart={timelineRange.start}
-          timelineEnd={timelineRange.end}
-          scale={scale}
-          monthSegments={monthSegments}
-          scaleSegments={scaleSegments}
-          timelineWidth={timelineWidth}
-        />
+        <>
+          <div className="space-y-4 sm:hidden">
+            <p className="text-sm text-slate-500">Mobile view shows a simplified schedule summary. Use a larger screen for full chart interaction.</p>
+            {visibleTasks.map((task) => (
+              <Card key={task.id} className="space-y-4 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="break-words font-semibold text-slate-950">{task.title}</p>
+                    <p className="mt-1 text-sm text-slate-500">{task.project?.name ?? "No project"}</p>
+                  </div>
+                  <Badge value={task.status} />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Badge value={task.priority} />
+                  {task.isMilestone ? <Badge value="Milestone" /> : null}
+                </div>
+                <div className="grid gap-2 rounded-2xl bg-slate-50 p-3 text-sm text-slate-600">
+                  <div className="flex items-center justify-between gap-3">
+                    <span>Start</span>
+                    <span className="text-right text-slate-900">{formatTaskDate(task.start_date)}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span>Due</span>
+                    <span className="text-right text-slate-900">{formatTaskDate(task.due_date)}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span>Assignee</span>
+                    <span className="text-right text-slate-900">{task.assignee?.full_name ?? "Unassigned"}</span>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+          <div className="hidden sm:block">
+            <GanttTimelineGrid
+              tasks={visibleTasks}
+              allTasks={tasks}
+              profiles={profiles}
+              projects={projects}
+              timelineStart={timelineRange.start}
+              timelineEnd={timelineRange.end}
+              scale={scale}
+              monthSegments={monthSegments}
+              scaleSegments={scaleSegments}
+              timelineWidth={timelineWidth}
+            />
+          </div>
+        </>
       ) : (
         <EmptyState
           title="No scheduled tasks to display"

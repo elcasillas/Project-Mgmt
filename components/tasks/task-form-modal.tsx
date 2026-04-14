@@ -21,7 +21,7 @@ import { saveTaskAction } from "@/lib/actions/workspace";
 import type { Profile, Project, Task } from "@/lib/types/domain";
 
 type ModalMode = "view" | "edit" | "create";
-const TASK_MODAL_PANEL_CLASS = "max-w-4xl p-4 sm:p-6 lg:p-8";
+const TASK_MODAL_PANEL_CLASS = "max-w-4xl";
 
 function DetailField({
   label,
@@ -290,7 +290,7 @@ export function TaskFormModal({
             </div>
 
             <div className="flex justify-end border-t border-[rgba(29,29,31,0.08)] pt-2">
-              <Button type="button" variant="ghost" onClick={requestClose}>
+              <Button type="button" variant="ghost" onClick={requestClose} className="max-sm:w-full">
                 Close
               </Button>
             </div>
@@ -502,14 +502,15 @@ export function TaskFormModal({
               </FormField>
             </section>
 
-            <div className="flex justify-end rounded-[12px] bg-white p-5 shadow-[rgba(0,0,0,0.08)_0px_12px_32px]">
-              <div className="flex justify-end gap-3">
-                <Button type="button" variant="ghost" onClick={requestClose}>
+            <div className="rounded-[12px] bg-white p-5 shadow-[rgba(0,0,0,0.08)_0px_12px_32px]">
+              <div className="flex flex-col-reverse justify-end gap-3 sm:flex-row">
+                <Button type="button" variant="ghost" onClick={requestClose} className="max-sm:w-full">
                   Cancel
                 </Button>
                 <Button
                   type="button"
                   disabled={isPending}
+                  className="max-sm:w-full"
                   onClick={() => {
                     if (!formRef.current) {
                       return;

@@ -49,7 +49,7 @@ export function ProjectsView({
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-1 flex-col gap-3 md:flex-row">
+        <div className="grid flex-1 gap-3 md:grid-cols-3">
           <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search projects and descriptions" />
           <Select value={status} onChange={(event) => setStatus(event.target.value)}>
             <option>All</option>
@@ -67,11 +67,11 @@ export function ProjectsView({
             <option>Critical</option>
           </Select>
         </div>
-        <div className="flex gap-2">
-          <Button variant={view === "grid" ? "primary" : "secondary"} size="sm" onClick={() => setView("grid")}>
+        <div className="flex flex-wrap gap-2 max-sm:[&>*]:flex-1">
+          <Button variant={view === "grid" ? "primary" : "secondary"} size="sm" onClick={() => setView("grid")} className="min-w-[88px]">
             Grid
           </Button>
-          <Button variant={view === "table" ? "primary" : "secondary"} size="sm" onClick={() => setView("table")}>
+          <Button variant={view === "table" ? "primary" : "secondary"} size="sm" onClick={() => setView("table")} className="min-w-[88px]">
             Table
           </Button>
           {canManageProjects ? <ProjectFormModal profiles={profiles} triggerSize="sm" /> : null}
@@ -79,15 +79,15 @@ export function ProjectsView({
       </div>
 
       {view === "grid" ? (
-        <div className="grid gap-5 xl:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {filteredProjects.map((project) => (
             <Card key={project.id} className="space-y-5">
               <div className="flex items-start justify-between gap-4">
-                <div>
-                  <Link href={`/projects/${project.id}`} className="text-lg font-semibold text-slate-950">
+                <div className="min-w-0">
+                  <Link href={`/projects/${project.id}`} className="block break-words text-lg font-semibold text-slate-950">
                     {project.name}
                   </Link>
-                  <p className="mt-2 text-sm text-slate-500">{project.description}</p>
+                  <p className="mt-2 break-words text-sm text-slate-500">{project.description}</p>
                 </div>
                 <Badge value={project.priority} />
               </div>
@@ -101,7 +101,7 @@ export function ProjectsView({
                 </div>
                 <Progress value={project.progress} />
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <AvatarGroup users={project.members ?? []} />
                 <p className="text-xs text-slate-500">Target {formatDate(project.target_end_date)}</p>
               </div>
@@ -135,8 +135,62 @@ export function ProjectsView({
           ))}
         </div>
       ) : (
-        <Card className="overflow-hidden p-0">
-          <div className="overflow-x-auto">
+        <div className="space-y-4">
+          <div className="grid gap-4 md:hidden">
+            {filteredProjects.map((project) => (
+              <Card key={project.id} className="space-y-4 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <Link href={`/projects/${project.id}`} className="block break-words font-semibold text-slate-950">
+                      {project.name}
+                    </Link>
+                    <p className="mt-1 text-sm text-slate-500">{project.owner?.full_name ?? "Unknown owner"}</p>
+                  </div>
+                  <Badge value={project.priority} />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Badge value={project.status} />
+                </div>
+                <div className="space-y-2 rounded-2xl bg-slate-50 p-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-500">Progress</span>
+                    <span className="font-medium text-slate-900">{project.progress}%</span>
+                  </div>
+                  <Progress value={project.progress} />
+                  <p className="text-sm text-slate-600">Target {formatDate(project.target_end_date)}</p>
+                </div>
+                <div className="flex gap-2">
+                  {canManageProjects ? (
+                    <ProjectFormModal
+                      profiles={profiles}
+                      project={project}
+                      triggerLabel="Edit"
+                      triggerAriaLabel="Edit Project"
+                      triggerTitle="Edit Project"
+                      triggerIconOnly
+                      triggerSize="sm"
+                    />
+                  ) : null}
+                  {canManageProjects ? (
+                    <ConfirmActionButton
+                      action={archiveProjectAction}
+                      fields={[{ name: "project_id", value: project.id }]}
+                      variant="ghost"
+                      size="sm"
+                      className={projectActionButtonClassName}
+                      aria-label="Archive Project"
+                      title="Archive Project"
+                    >
+                      <Archive className="h-4 w-4" />
+                    </ConfirmActionButton>
+                  ) : null}
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          <Card className="hidden overflow-hidden p-0 md:block">
+            <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-100 text-sm">
               <thead className="bg-slate-50 text-left text-slate-500">
                 <tr>
@@ -200,7 +254,8 @@ export function ProjectsView({
               </tbody>
             </table>
           </div>
-        </Card>
+          </Card>
+        </div>
       )}
     </div>
   );

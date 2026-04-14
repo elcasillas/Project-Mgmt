@@ -187,13 +187,14 @@ export function ProjectFormModal({
               <Textarea name="notes" defaultValue={project?.notes ?? ""} />
             </FormField>
           </div>
-          <div className="md:col-span-2 flex justify-end gap-3">
-            <Button type="button" variant="ghost" onClick={requestClose}>
+          <div className="md:col-span-2 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button type="button" variant="ghost" onClick={requestClose} className="max-sm:w-full">
               Cancel
             </Button>
             <Button
               type="button"
               disabled={isPending}
+              className="max-sm:w-full"
               onClick={() => {
                 if (!formRef.current) {
                   return;

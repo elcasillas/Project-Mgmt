@@ -73,7 +73,7 @@ export function TasksView({
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-1 flex-col gap-3 md:flex-row">
+        <div className="grid flex-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search tasks, projects, and descriptions" />
           <Select value={status} onChange={(event) => setStatus(event.target.value)}>
             <option>All</option>
@@ -113,10 +113,10 @@ export function TasksView({
             <option>No Due Date</option>
           </Select>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 max-sm:[&>*]:flex-1">
           {showViewSwitcher
             ? availableViews.map((mode) => (
-                <Button key={mode} variant={view === mode ? "primary" : "secondary"} size="sm" onClick={() => setView(mode)}>
+                <Button key={mode} variant={view === mode ? "primary" : "secondary"} size="sm" onClick={() => setView(mode)} className="min-w-[96px]">
                   {mode[0].toUpperCase() + mode.slice(1)}
                 </Button>
               ))
@@ -148,7 +148,7 @@ export function TasksView({
         <div className="grid gap-6 xl:grid-cols-[1.15fr_1fr]">
           <Card className="space-y-5">
             <div>
-              <h2 className="text-lg font-semibold text-slate-950">{selectedTask.title}</h2>
+              <h2 className="break-words text-lg font-semibold text-slate-950">{selectedTask.title}</h2>
               <p className="mt-2 text-sm text-slate-500">{selectedTask.description || "No description provided."}</p>
               <div className="mt-4 space-y-2 text-sm">
                 <p className="text-slate-700">
@@ -190,9 +190,9 @@ export function TasksView({
             <div className="space-y-3">
               {taskAttachments.map((attachment) => (
                 <div key={attachment.id} className="rounded-2xl border border-slate-100 p-4">
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <p className="font-medium text-slate-900">{attachment.file_name}</p>
+                      <p className="break-words font-medium text-slate-900">{attachment.file_name}</p>
                       <p className="text-xs text-slate-500">{attachment.uploader?.full_name ?? "Unknown uploader"}</p>
                     </div>
                     <div className="flex gap-2">

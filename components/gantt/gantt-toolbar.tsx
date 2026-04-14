@@ -82,13 +82,14 @@ export function GanttToolbar({
             <option value="all">All scheduled work</option>
           </Select>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 max-sm:[&>*]:flex-1">
           {(["day", "week", "month"] as GanttScale[]).map((option) => (
             <Button
               key={option}
               type="button"
               variant={scale === option ? "primary" : "secondary"}
               size="sm"
+              className="min-w-[88px]"
               onClick={() => onScaleChange(option)}
             >
               {option[0].toUpperCase() + option.slice(1)}

@@ -101,13 +101,14 @@ export function UserFormModal({
           <FormField label={isEditing ? "Confirm New Password" : "Confirm Password"}>
             <Input name="confirm_password" type="password" autoComplete={isEditing ? "new-password" : "off"} />
           </FormField>
-          <div className="md:col-span-2 flex justify-end gap-3">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+          <div className="md:col-span-2 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)} className="max-sm:w-full">
               Cancel
             </Button>
             <Button
               type="button"
               disabled={isPending}
+              className="max-sm:w-full"
               onClick={() => {
                 if (!formRef.current) {
                   return;

@@ -26,11 +26,11 @@ export function ConfirmationDialog({
 }) {
   return (
     <Modal open={open} onClose={onCancel} title={title} description={description}>
-      <div className="flex justify-end gap-3">
-        <Button type="button" variant="ghost" onClick={onCancel}>
+      <div className="flex flex-col-reverse justify-end gap-3 sm:flex-row">
+        <Button type="button" variant="ghost" onClick={onCancel} className="max-sm:w-full">
           {cancelLabel}
         </Button>
-        <Button type="button" variant={confirmVariant} disabled={isPending} onClick={onConfirm}>
+        <Button type="button" variant={confirmVariant} disabled={isPending} onClick={onConfirm} className="max-sm:w-full">
           {confirmLabel}
         </Button>
       </div>

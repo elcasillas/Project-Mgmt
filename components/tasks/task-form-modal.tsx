@@ -106,6 +106,7 @@ export function TaskFormModal({
   const [dependencyQuery, setDependencyQuery] = useState("");
   const defaultTriggerText = typeof triggerLabel === "string" ? triggerLabel : undefined;
   const formRef = useRef<HTMLFormElement>(null);
+  const pendingBaselineResetRef = useRef(false);
   const formKey = `${activeTask?.id ?? "new"}:${activeTask?.updated_at ?? "draft"}:${modalMode}`;
   const addPurchaseItem = () => {
     setPurchaseItems((current) => [...current, createEmptyPurchaseItem()]);
@@ -159,6 +160,21 @@ export function TaskFormModal({
   useEffect(() => {
     setPersistedTask(task);
   }, [task]);
+
+  useEffect(() => {
+    if (!pendingBaselineResetRef.current || !open || modalMode !== "edit" || !formRef.current) {
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      markClean();
+      pendingBaselineResetRef.current = false;
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+    };
+  }, [formKey, markClean, modalMode, open]);
 
   useEffect(() => {
     if (!open) {
@@ -619,13 +635,13 @@ export function TaskFormModal({
                         return;
                       }
                       if (result.task) {
+                        pendingBaselineResetRef.current = true;
                         setPersistedTask(result.task);
                         setPurchaseItems(result.task.purchaseItems?.length ? result.task.purchaseItems : [createEmptyPurchaseItem()]);
                         if (process.env.NODE_ENV !== "production") {
                           console.info("[TaskFormModal] normalized task after save", result.task);
                         }
                       }
-                      markClean();
                       if (activeTask && returnToViewOnEditExit) {
                         setModalMode("view");
                         router.refresh();

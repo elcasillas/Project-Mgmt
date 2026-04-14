@@ -632,7 +632,7 @@ export function TaskFormModal({
 
             <div className="rounded-[12px] bg-white p-5 shadow-[rgba(0,0,0,0.08)_0px_12px_32px]">
               <div className="flex flex-col-reverse justify-end gap-3 sm:flex-row">
-                <Button type="button" variant="ghost" onClick={requestClose} className="max-sm:w-full">
+                <Button type="button" variant="ghost" onClick={handleRequestClose} className="max-sm:w-full">
                   Cancel
                 </Button>
                 <Button

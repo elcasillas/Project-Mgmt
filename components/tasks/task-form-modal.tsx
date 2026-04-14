@@ -12,6 +12,7 @@ import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { FormField } from "@/components/shared/form-field";
+import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 import { TASK_PRIORITIES, TASK_STATUSES } from "@/lib/data/constants";
 import { cn } from "@/lib/utils/cn";
 import { formatTaskDate, getTaskDateInputValue } from "@/lib/utils/task-dates";
@@ -21,6 +22,12 @@ import type { Profile, Project, Task, TaskPurchaseItem } from "@/lib/types/domai
 
 type ModalMode = "view" | "edit" | "create";
 const TASK_MODAL_PANEL_CLASS = "max-w-4xl";
+
+function logTaskModalDebug(marker: string, payload?: Record<string, unknown>) {
+  if (process.env.NODE_ENV !== "production") {
+    console.info(marker, payload ?? {});
+  }
+}
 
 function serializeTaskForm(form: HTMLFormElement) {
   const formData = new FormData(form);
@@ -107,8 +114,6 @@ export function TaskFormModal({
   const [returnToViewOnEditExit, setReturnToViewOnEditExit] = useState(defaultMode === "view");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isActuallyDirty, setIsActuallyDirty] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
   const activeTask = persistedTask ?? task;
   const [selectedProjectId, setSelectedProjectId] = useState(activeTask?.project_id ?? initialProjectId ?? "");
   const [selectedDependencyIds, setSelectedDependencyIds] = useState<string[]>(activeTask?.dependency_ids ?? []);
@@ -118,17 +123,9 @@ export function TaskFormModal({
   const [dependencyQuery, setDependencyQuery] = useState("");
   const defaultTriggerText = typeof triggerLabel === "string" ? triggerLabel : undefined;
   const formRef = useRef<HTMLFormElement>(null);
-  const initialSnapshotRef = useRef("");
-  const pendingCloseActionRef = useRef<(() => void) | null>(null);
+  const closeSourceRef = useRef("initial");
+  const skipUnsavedWarningRef = useRef(false);
   const formKey = `${activeTask?.id ?? "new"}:${activeTask?.updated_at ?? "draft"}:${modalMode}`;
-  const markTaskFormClean = () => {
-    if (formRef.current) {
-      initialSnapshotRef.current = serializeTaskForm(formRef.current);
-    }
-    setIsActuallyDirty(false);
-    setConfirmOpen(false);
-    pendingCloseActionRef.current = null;
-  };
   const addPurchaseItem = () => {
     setPurchaseItems((current) => [...current, createEmptyPurchaseItem()]);
   };
@@ -144,30 +141,64 @@ export function TaskFormModal({
     setOpen(true);
   };
   const handleModalDismiss = () => {
+    const source = closeSourceRef.current;
+    logTaskModalDebug("TASK_MODAL_DISMISS", {
+      source,
+      modalMode,
+      returnToViewOnEditExit,
+      activeTaskId: activeTask?.id ?? null
+    });
     setError(null);
-    if (modalMode === "edit" && task && returnToViewOnEditExit) {
+    if (modalMode === "edit" && task && returnToViewOnEditExit && source !== "save-success") {
       setModalMode("view");
       return;
     }
 
     setOpen(false);
   };
-  const handleRequestClose = () => {
-    if (process.env.NODE_ENV !== "production") {
-      console.info("[TaskFormModal] close requested", {
-        modalMode,
-        isActuallyDirty,
-        activeTaskId: activeTask?.id ?? null,
-        warningSource: modalMode === "edit" && isActuallyDirty ? "task-form-modal" : "none"
-      });
+  const {
+    isDirty: isTaskFormDirty,
+    confirmOpen,
+    requestClose,
+    confirmLeave,
+    stay,
+    markClean,
+    markCleanUntilNextChange
+  } = useUnsavedChangesGuard({
+    formRef,
+    open: open && modalMode === "edit",
+    onDiscard: handleModalDismiss,
+    resetKey: formKey
+  });
+  const markTaskFormClean = (reason: string, options?: { untilNextChange?: boolean }) => {
+    if (options?.untilNextChange) {
+      skipUnsavedWarningRef.current = true;
+      markCleanUntilNextChange();
+    } else {
+      skipUnsavedWarningRef.current = false;
+      markClean();
     }
-    if (modalMode !== "edit" || !isActuallyDirty) {
-      handleModalDismiss();
-      return;
+    logTaskModalDebug("TASK_MARK_CLEAN_CALLED", {
+      reason,
+      untilNextChange: Boolean(options?.untilNextChange),
+      modalMode,
+      activeTaskId: activeTask?.id ?? null
+    });
+  };
+  const handleRequestClose = (source: string) => {
+    closeSourceRef.current = source;
+    logTaskModalDebug("TASK_CLOSE_REQUEST", {
+      source,
+      modalMode,
+      skip: skipUnsavedWarningRef.current,
+      isDirty: isTaskFormDirty,
+      confirmOpen,
+      activeTaskId: activeTask?.id ?? null
+    });
+    requestClose();
+    if (skipUnsavedWarningRef.current) {
+      skipUnsavedWarningRef.current = false;
     }
-
-    pendingCloseActionRef.current = handleModalDismiss;
-    setConfirmOpen(true);
   };
   const selectedProject = projects.find((projectOption) => projectOption.id === selectedProjectId);
   const dependencyNames = activeTask ? resolveTaskDependencyNames(activeTask, availableTasks) : [];
@@ -195,9 +226,8 @@ export function TaskFormModal({
 
   useEffect(() => {
     if (!open) {
-      setIsActuallyDirty(false);
-      setConfirmOpen(false);
-      pendingCloseActionRef.current = null;
+      closeSourceRef.current = "closed";
+      skipUnsavedWarningRef.current = false;
       return;
     }
 
@@ -211,28 +241,36 @@ export function TaskFormModal({
   }, [activeTask, defaultMode, initialProjectId, open]);
 
   useEffect(() => {
-    if (!open || modalMode !== "edit" || !formRef.current) {
+    logTaskModalDebug("TASK_MODAL_RENDER", {
+      open,
+      modalMode,
+      activeTaskId: activeTask?.id ?? null,
+      isDirty: isTaskFormDirty,
+      confirmOpen,
+      skip: skipUnsavedWarningRef.current,
+      returnToViewOnEditExit
+    });
+  }, [activeTask?.id, confirmOpen, isTaskFormDirty, modalMode, open, returnToViewOnEditExit]);
+
+  useEffect(() => {
+    if (isTaskFormDirty) {
+      skipUnsavedWarningRef.current = false;
+    }
+  }, [isTaskFormDirty]);
+
+  useEffect(() => {
+    if (!confirmOpen) {
       return;
     }
 
-    const form = formRef.current;
-    const frame = window.requestAnimationFrame(() => {
-      initialSnapshotRef.current = serializeTaskForm(form);
-      setIsActuallyDirty(false);
+    logTaskModalDebug("TASK_WARNING_DIALOG_OPENED_FROM", {
+      component: "TaskFormModal",
+      source: closeSourceRef.current,
+      modalMode,
+      isDirty: isTaskFormDirty,
+      activeTaskId: activeTask?.id ?? null
     });
-    const updateDirtyState = () => {
-      setIsActuallyDirty(serializeTaskForm(form) !== initialSnapshotRef.current);
-    };
-
-    form.addEventListener("input", updateDirtyState);
-    form.addEventListener("change", updateDirtyState);
-
-    return () => {
-      window.cancelAnimationFrame(frame);
-      form.removeEventListener("input", updateDirtyState);
-      form.removeEventListener("change", updateDirtyState);
-    };
-  }, [formKey, modalMode, open]);
+  }, [activeTask?.id, confirmOpen, isTaskFormDirty, modalMode]);
 
   useEffect(() => {
     if (!selectedProjectId) {
@@ -276,7 +314,7 @@ export function TaskFormModal({
       )}
       <Modal
         open={open}
-        onClose={handleRequestClose}
+        onClose={() => handleRequestClose("modal-x")}
         title={modalMode === "create" ? "Create Task" : modalMode === "edit" ? "Edit Task" : "Task Details"}
         description={
           modalMode === "view"
@@ -394,7 +432,7 @@ export function TaskFormModal({
             </div>
 
             <div className="flex justify-end border-t border-[rgba(29,29,31,0.08)] pt-2">
-              <Button type="button" variant="ghost" onClick={handleRequestClose} className="max-sm:w-full">
+              <Button type="button" variant="ghost" onClick={() => handleRequestClose("view-close-button")} className="max-sm:w-full">
                 Close
               </Button>
             </div>
@@ -652,7 +690,7 @@ export function TaskFormModal({
 
             <div className="rounded-[12px] bg-white p-5 shadow-[rgba(0,0,0,0.08)_0px_12px_32px]">
               <div className="flex flex-col-reverse justify-end gap-3 sm:flex-row">
-                <Button type="button" variant="ghost" onClick={handleRequestClose} className="max-sm:w-full">
+                <Button type="button" variant="ghost" onClick={() => handleRequestClose("edit-cancel-button")} className="max-sm:w-full">
                   Cancel
                 </Button>
                 <Button
@@ -665,41 +703,43 @@ export function TaskFormModal({
                     }
 
                     const formData = new FormData(formRef.current);
-                    if (process.env.NODE_ENV !== "production") {
-                      console.info("[TaskFormModal] purchaseItems before submit", {
-                        taskId: activeTask?.id ?? null,
-                        purchaseItems
-                      });
-                    }
+                    logTaskModalDebug("TASK_SUBMIT_STARTED", {
+                      activeTaskId: activeTask?.id ?? null,
+                      modalMode,
+                      isDirty: isTaskFormDirty,
+                      purchaseItems
+                    });
                     try {
                       setIsSaving(true);
                       setError(null);
+                      logTaskModalDebug("TASK_SAVE_REQUEST_SENT", {
+                        activeTaskId: activeTask?.id ?? null,
+                        modalMode
+                      });
                       const result = await saveTaskAction(formData);
                       if (!result?.ok) {
                         setError(result?.message || "Unable to save task.");
                         return;
                       }
-                      if (process.env.NODE_ENV !== "production") {
-                        console.info("[TaskFormModal] save response", {
-                          activeTaskId: activeTask?.id ?? null,
-                          resultTask: result.task
-                        });
-                      }
+                      logTaskModalDebug("TASK_SAVE_SUCCESS", {
+                        activeTaskId: activeTask?.id ?? null,
+                        resultTaskId: result.task?.id ?? null,
+                        resultTask: result.task
+                      });
                       if (result.task) {
                         setPersistedTask(result.task);
                         setPurchaseItems(result.task.purchaseItems?.length ? result.task.purchaseItems : [createEmptyPurchaseItem()]);
-                        if (process.env.NODE_ENV !== "production") {
-                          console.info("[TaskFormModal] normalized task after save", result.task);
-                        }
                       }
-                      markTaskFormClean();
-                      if (process.env.NODE_ENV !== "production") {
-                        console.info("[TaskFormModal] baseline reset after save", {
-                          activeTaskId: result.task?.id ?? activeTask?.id ?? null,
-                          isActuallyDirty: false
-                        });
-                      }
-                      setOpen(false);
+                      markTaskFormClean("save-success", { untilNextChange: true });
+                      logTaskModalDebug("TASK_DIRTY_STATE_AFTER_CLEAN", {
+                        activeTaskId: result.task?.id ?? activeTask?.id ?? null,
+                        isDirty: false,
+                        skip: true
+                      });
+                      logTaskModalDebug("TASK_SAVE_SUCCESS_CLOSE", {
+                        activeTaskId: result.task?.id ?? activeTask?.id ?? null
+                      });
+                      handleRequestClose("save-success");
                       if (redirectPath) {
                         router.push(`${redirectPath}?success=${encodeURIComponent(result.message)}` as Route);
                       }
@@ -723,15 +763,8 @@ export function TaskFormModal({
         confirmLabel="Leave Without Saving"
         cancelLabel="Stay"
         confirmVariant="primary"
-        onConfirm={() => {
-          const action = pendingCloseActionRef.current;
-          markTaskFormClean();
-          action?.();
-        }}
-        onCancel={() => {
-          pendingCloseActionRef.current = null;
-          setConfirmOpen(false);
-        }}
+        onConfirm={confirmLeave}
+        onCancel={stay}
       />
     </>
   );

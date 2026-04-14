@@ -18,11 +18,13 @@ function serializeForm(form: HTMLFormElement) {
 export function useUnsavedChangesGuard({
   formRef,
   open,
-  onDiscard
+  onDiscard,
+  resetKey
 }: {
   formRef: React.RefObject<HTMLFormElement | null>;
   open: boolean;
   onDiscard: () => void;
+  resetKey?: string | number;
 }) {
   const router = useRouter();
   const [isDirty, setIsDirty] = useState(false);
@@ -78,7 +80,7 @@ export function useUnsavedChangesGuard({
       form.removeEventListener("input", updateDirtyState);
       form.removeEventListener("change", updateDirtyState);
     };
-  }, [formRef, open]);
+  }, [formRef, open, resetKey]);
 
   useEffect(() => {
     if (!open || !isDirty) {

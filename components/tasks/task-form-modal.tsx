@@ -133,7 +133,8 @@ export function TaskFormModal({
   const { confirmOpen, requestClose, confirmLeave, stay, markClean } = useUnsavedChangesGuard({
     formRef,
     open: open && modalMode === "edit",
-    onDiscard: handleModalDismiss
+    onDiscard: handleModalDismiss,
+    resetKey: formKey
   });
   const selectedProject = projects.find((projectOption) => projectOption.id === selectedProjectId);
   const dependencyNames = activeTask ? resolveTaskDependencyNames(activeTask, availableTasks) : [];

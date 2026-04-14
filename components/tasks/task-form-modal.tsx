@@ -58,9 +58,9 @@ function DetailField({
   className?: string;
 }) {
   return (
-    <div className={cn("rounded-[12px] bg-white p-5 shadow-[rgba(0,0,0,0.06)_0px_10px_30px]", className)}>
-      <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[rgba(29,29,31,0.5)]">{label}</p>
-      <div className="mt-3 break-words text-[17px] font-medium leading-[1.35] tracking-[-0.01em] text-[#1d1d1f]">{value}</div>
+    <div className={cn("rounded-[12px] bg-white px-4 py-3.5 shadow-[rgba(0,0,0,0.05)_0px_8px_24px]", className)}>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[rgba(29,29,31,0.5)]">{label}</p>
+      <div className="mt-2 break-words text-[15px] font-medium leading-[1.35] tracking-[-0.01em] text-[#1d1d1f]">{value}</div>
     </div>
   );
 }
@@ -352,88 +352,61 @@ export function TaskFormModal({
       >
         {error ? <p className="mb-4 rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p> : null}
         {modalMode === "view" && activeTask ? (
-          <div className="space-y-6">
-            <section className="rounded-[12px] bg-[#1d1d1f] px-5 py-6 text-white sm:px-6">
+          <div className="space-y-4">
+            <section className="rounded-[12px] bg-[#1d1d1f] px-4 py-4 text-white sm:px-5 sm:py-5">
               <div className="min-w-0">
                 <p className="text-[12px] font-semibold uppercase tracking-[0.22em] text-white/55">Task overview</p>
-                <h3 className="mt-3 text-[28px] font-semibold leading-[1.14] tracking-[-0.02em] break-words sm:text-[32px]">
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <Badge value={activeTask.status} className="px-2.5 py-0.5 text-[11px]" />
+                  <Badge value={activeTask.priority} className="px-2.5 py-0.5 text-[11px]" />
+                </div>
+                <h3 className="mt-3 text-[24px] font-semibold leading-[1.12] tracking-[-0.02em] break-words sm:text-[28px]">
                   {activeTask.title}
                 </h3>
-                <p className="mt-4 max-w-3xl text-[15px] leading-[1.47] tracking-[-0.01em] text-white/78">
+                <p className="mt-2 max-w-3xl text-[14px] leading-[1.45] tracking-[-0.01em] text-white/78">
                   {activeTask.description || "No description provided."}
                 </p>
               </div>
             </section>
 
-            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.95fr)]">
-              <section className="space-y-4">
-                <DetailField label="Project" value={activeTask.project?.name ?? "Not set"} />
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <DetailField label="Assignee" value={activeTask.assignee?.full_name ?? "Not set"} />
-                  <DetailField label="Reporter" value={activeTask.reporter?.full_name ?? "Not set"} />
+            <div className="grid gap-3 md:grid-cols-2">
+              <DetailField label="Project" value={activeTask.project?.name ?? "Not set"} />
+              <DetailField label="Dependencies" value={dependencyNames.length ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {dependencyNames.map((dependencyName) => (
+                    <span
+                      key={`${activeTask.id}:${dependencyName}`}
+                      className="inline-flex rounded-full bg-[#f5f5f7] px-2.5 py-1 text-[12px] font-medium tracking-[-0.01em] text-[rgba(29,29,31,0.72)]"
+                    >
+                      {dependencyName}
+                    </span>
+                  ))}
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <DetailField label="Start date" value={formatTaskDate(activeTask.start_date)} />
-                  <DetailField label="Due date" value={formatTaskDate(activeTask.due_date)} />
-                </div>
-              </section>
-
-              <section className="space-y-4">
-                <DetailField
-                  label="Status"
-                  value={
-                    <div className="flex flex-wrap gap-2">
-                      <Badge value={activeTask.status} />
-                    </div>
-                  }
-                />
-                <DetailField
-                  label="Priority"
-                  value={
-                    <div className="flex flex-wrap gap-2">
-                      <Badge value={activeTask.priority} />
-                    </div>
-                  }
-                />
-                <DetailField
-                  label="Dependencies"
-                  value={
-                    dependencyNames.length ? (
-                      <div className="flex flex-wrap gap-2">
-                        {dependencyNames.map((dependencyName) => (
-                          <span
-                            key={`${activeTask.id}:${dependencyName}`}
-                            className="inline-flex rounded-full bg-[#f5f5f7] px-3 py-1 text-[14px] font-medium tracking-[-0.01em] text-[rgba(29,29,31,0.72)]"
-                          >
-                            {dependencyName}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      "None"
-                    )
-                  }
-                />
-                <DetailField
-                  label="Purchase Items"
-                  value={
-                    activeTask.purchaseItems?.length ? (
-                      <ul className="space-y-2 text-[15px] font-medium leading-[1.45] text-[#1d1d1f]">
-                        {activeTask.purchaseItems.map((item) => (
-                          <li key={item.id} className="rounded-[10px] bg-[#f5f5f7] px-3 py-2">
-                            {item.name}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      "No purchase items added"
-                    )
-                  }
-                />
-              </section>
+              ) : "None"} />
+              <DetailField label="Assignee" value={activeTask.assignee?.full_name ?? "Not set"} />
+              <DetailField label="Reporter" value={activeTask.reporter?.full_name ?? "Not set"} />
+              <DetailField label="Start date" value={formatTaskDate(activeTask.start_date)} />
+              <DetailField label="Due date" value={formatTaskDate(activeTask.due_date)} />
+              <DetailField
+                label="Purchase Items"
+                className="md:col-span-2"
+                value={
+                  activeTask.purchaseItems?.length ? (
+                    <ul className="space-y-1.5 text-[14px] font-medium leading-[1.4] text-[#1d1d1f]">
+                      {activeTask.purchaseItems.map((item) => (
+                        <li key={item.id} className="rounded-[10px] bg-[#f5f5f7] px-3 py-2">
+                          {item.name}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    "No purchase items added"
+                  )
+                }
+              />
             </div>
 
-            <div className="flex justify-end border-t border-[rgba(29,29,31,0.08)] pt-2">
+            <div className="flex justify-end border-t border-[rgba(29,29,31,0.08)] pt-1">
               <Button type="button" variant="ghost" onClick={() => handleRequestClose("view-close-button")} className="max-sm:w-full">
                 Close
               </Button>

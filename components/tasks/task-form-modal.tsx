@@ -12,7 +12,6 @@ import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { FormField } from "@/components/shared/form-field";
-import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 import { TASK_PRIORITIES, TASK_STATUSES } from "@/lib/data/constants";
 import { cn } from "@/lib/utils/cn";
 import { formatTaskDate, getTaskDateInputValue } from "@/lib/utils/task-dates";
@@ -22,6 +21,17 @@ import type { Profile, Project, Task, TaskPurchaseItem } from "@/lib/types/domai
 
 type ModalMode = "view" | "edit" | "create";
 const TASK_MODAL_PANEL_CLASS = "max-w-4xl";
+
+function serializeTaskForm(form: HTMLFormElement) {
+  const formData = new FormData(form);
+  const values: string[] = [];
+
+  for (const [key, value] of formData.entries()) {
+    values.push(`${key}:${value instanceof File ? `${value.name}:${value.size}:${value.type}` : String(value)}`);
+  }
+
+  return values.join("|");
+}
 
 function createEmptyPurchaseItem(): TaskPurchaseItem {
   return {
@@ -97,7 +107,8 @@ export function TaskFormModal({
   const [returnToViewOnEditExit, setReturnToViewOnEditExit] = useState(defaultMode === "view");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [skipUnsavedWarning, setSkipUnsavedWarning] = useState(false);
+  const [isActuallyDirty, setIsActuallyDirty] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const activeTask = persistedTask ?? task;
   const [selectedProjectId, setSelectedProjectId] = useState(activeTask?.project_id ?? initialProjectId ?? "");
   const [selectedDependencyIds, setSelectedDependencyIds] = useState<string[]>(activeTask?.dependency_ids ?? []);
@@ -107,7 +118,17 @@ export function TaskFormModal({
   const [dependencyQuery, setDependencyQuery] = useState("");
   const defaultTriggerText = typeof triggerLabel === "string" ? triggerLabel : undefined;
   const formRef = useRef<HTMLFormElement>(null);
+  const initialSnapshotRef = useRef("");
+  const pendingCloseActionRef = useRef<(() => void) | null>(null);
   const formKey = `${activeTask?.id ?? "new"}:${activeTask?.updated_at ?? "draft"}:${modalMode}`;
+  const markTaskFormClean = () => {
+    if (formRef.current) {
+      initialSnapshotRef.current = serializeTaskForm(formRef.current);
+    }
+    setIsActuallyDirty(false);
+    setConfirmOpen(false);
+    pendingCloseActionRef.current = null;
+  };
   const addPurchaseItem = () => {
     setPurchaseItems((current) => [...current, createEmptyPurchaseItem()]);
   };
@@ -132,19 +153,14 @@ export function TaskFormModal({
     setOpen(false);
   };
   const handleRequestClose = () => {
-    if (modalMode !== "edit" || skipUnsavedWarning) {
+    if (modalMode !== "edit" || !isActuallyDirty) {
       handleModalDismiss();
       return;
     }
 
-    requestClose();
+    pendingCloseActionRef.current = handleModalDismiss;
+    setConfirmOpen(true);
   };
-  const { confirmOpen, requestClose, confirmLeave, stay, markCleanUntilNextChange } = useUnsavedChangesGuard({
-    formRef,
-    open: open && modalMode === "edit",
-    onDiscard: handleModalDismiss,
-    resetKey: formKey
-  });
   const selectedProject = projects.find((projectOption) => projectOption.id === selectedProjectId);
   const dependencyNames = activeTask ? resolveTaskDependencyNames(activeTask, availableTasks) : [];
   const sectionClassName = "rounded-[12px] bg-white p-5 shadow-[rgba(0,0,0,0.08)_0px_12px_32px]";
@@ -171,18 +187,9 @@ export function TaskFormModal({
 
   useEffect(() => {
     if (!open) {
-      setSkipUnsavedWarning(false);
-    }
-  }, [open]);
-
-  useEffect(() => {
-    if (modalMode !== "edit") {
-      setSkipUnsavedWarning(false);
-    }
-  }, [modalMode]);
-
-  useEffect(() => {
-    if (!open) {
+      setIsActuallyDirty(false);
+      setConfirmOpen(false);
+      pendingCloseActionRef.current = null;
       return;
     }
 
@@ -196,23 +203,28 @@ export function TaskFormModal({
   }, [activeTask, defaultMode, initialProjectId, open]);
 
   useEffect(() => {
-    if (!open || modalMode !== "edit" || !skipUnsavedWarning || !formRef.current) {
+    if (!open || modalMode !== "edit" || !formRef.current) {
       return;
     }
 
     const form = formRef.current;
-    const clearSkipUnsavedWarning = () => {
-      setSkipUnsavedWarning(false);
+    const frame = window.requestAnimationFrame(() => {
+      initialSnapshotRef.current = serializeTaskForm(form);
+      setIsActuallyDirty(false);
+    });
+    const updateDirtyState = () => {
+      setIsActuallyDirty(serializeTaskForm(form) !== initialSnapshotRef.current);
     };
 
-    form.addEventListener("input", clearSkipUnsavedWarning);
-    form.addEventListener("change", clearSkipUnsavedWarning);
+    form.addEventListener("input", updateDirtyState);
+    form.addEventListener("change", updateDirtyState);
 
     return () => {
-      form.removeEventListener("input", clearSkipUnsavedWarning);
-      form.removeEventListener("change", clearSkipUnsavedWarning);
+      window.cancelAnimationFrame(frame);
+      form.removeEventListener("input", updateDirtyState);
+      form.removeEventListener("change", updateDirtyState);
     };
-  }, [modalMode, open, skipUnsavedWarning]);
+  }, [formKey, modalMode, open]);
 
   useEffect(() => {
     if (!selectedProjectId) {
@@ -658,8 +670,6 @@ export function TaskFormModal({
                         setError(result?.message || "Unable to save task.");
                         return;
                       }
-                      setSkipUnsavedWarning(true);
-                      markCleanUntilNextChange();
                       if (result.task) {
                         setPersistedTask(result.task);
                         setPurchaseItems(result.task.purchaseItems?.length ? result.task.purchaseItems : [createEmptyPurchaseItem()]);
@@ -667,6 +677,7 @@ export function TaskFormModal({
                           console.info("[TaskFormModal] normalized task after save", result.task);
                         }
                       }
+                      markTaskFormClean();
                       setOpen(false);
                       if (redirectPath) {
                         router.push(`${redirectPath}?success=${encodeURIComponent(result.message)}` as Route);
@@ -689,8 +700,15 @@ export function TaskFormModal({
         confirmLabel="Leave Without Saving"
         cancelLabel="Stay"
         confirmVariant="primary"
-        onConfirm={confirmLeave}
-        onCancel={stay}
+        onConfirm={() => {
+          const action = pendingCloseActionRef.current;
+          markTaskFormClean();
+          action?.();
+        }}
+        onCancel={() => {
+          pendingCloseActionRef.current = null;
+          setConfirmOpen(false);
+        }}
       />
     </>
   );

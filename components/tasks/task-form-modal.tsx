@@ -667,12 +667,6 @@ export function TaskFormModal({
                           console.info("[TaskFormModal] normalized task after save", result.task);
                         }
                       }
-                      if (activeTask && returnToViewOnEditExit) {
-                        setModalMode("view");
-                        router.refresh();
-                        return;
-                      }
-
                       setOpen(false);
                       if (redirectPath) {
                         router.push(`${redirectPath}?success=${encodeURIComponent(result.message)}` as Route);

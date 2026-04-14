@@ -106,7 +106,6 @@ export function TaskFormModal({
   const [dependencyQuery, setDependencyQuery] = useState("");
   const defaultTriggerText = typeof triggerLabel === "string" ? triggerLabel : undefined;
   const formRef = useRef<HTMLFormElement>(null);
-  const pendingBaselineResetRef = useRef(false);
   const formKey = `${activeTask?.id ?? "new"}:${activeTask?.updated_at ?? "draft"}:${modalMode}`;
   const addPurchaseItem = () => {
     setPurchaseItems((current) => [...current, createEmptyPurchaseItem()]);
@@ -160,21 +159,6 @@ export function TaskFormModal({
   useEffect(() => {
     setPersistedTask(task);
   }, [task]);
-
-  useEffect(() => {
-    if (!pendingBaselineResetRef.current || !open || modalMode !== "edit" || !formRef.current) {
-      return;
-    }
-
-    const frame = window.requestAnimationFrame(() => {
-      markCleanUntilNextChange();
-      pendingBaselineResetRef.current = false;
-    });
-
-    return () => {
-      window.cancelAnimationFrame(frame);
-    };
-  }, [formKey, markCleanUntilNextChange, modalMode, open]);
 
   useEffect(() => {
     if (!open) {
@@ -634,8 +618,8 @@ export function TaskFormModal({
                         setError(result?.message || "Unable to save task.");
                         return;
                       }
+                      markCleanUntilNextChange();
                       if (result.task) {
-                        pendingBaselineResetRef.current = true;
                         setPersistedTask(result.task);
                         setPurchaseItems(result.task.purchaseItems?.length ? result.task.purchaseItems : [createEmptyPurchaseItem()]);
                         if (process.env.NODE_ENV !== "production") {

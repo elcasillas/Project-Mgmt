@@ -114,8 +114,8 @@ export function TasksCalendar({
                       redirectPath={redirectPath}
                       triggerVariant="ghost"
                       triggerSize="sm"
-                      triggerAriaLabel={`View task ${task.title}`}
-                      triggerTitle={`View task ${task.title}`}
+                      triggerAriaLabel={`Task Details for ${task.title}`}
+                      triggerTitle="Task Details"
                       triggerClassName="h-auto w-full cursor-pointer flex-col items-start rounded-xl p-3 text-left shadow-sm transition-[filter,box-shadow,transform] hover:brightness-95 hover:shadow-md"
                       triggerStyle={{
                         backgroundColor: tone.background,
@@ -194,8 +194,8 @@ export function TasksCalendar({
                               redirectPath={redirectPath}
                               triggerVariant="ghost"
                               triggerSize="sm"
-                              triggerAriaLabel={`View task ${task.title}`}
-                              triggerTitle={`View task ${task.title}`}
+                              triggerAriaLabel={`Task Details for ${task.title}`}
+                              triggerTitle="Task Details"
                               triggerClassName="h-auto w-full cursor-pointer flex-col items-start rounded-xl p-3 text-left shadow-sm transition-[filter,box-shadow,transform] hover:brightness-95 hover:shadow-md"
                               triggerStyle={{
                                 backgroundColor: tone.background,

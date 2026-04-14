@@ -102,7 +102,8 @@ export function GanttTimelineGrid({
                   <button
                     type="button"
                     onClick={open}
-                    aria-label={ariaLabel ?? `Open ${task.title}`}
+                    aria-label={ariaLabel ?? `Task Details for ${task.title}`}
+                    title={title ?? "Task Details"}
                     className="grid min-w-max text-left transition hover:bg-slate-50/80 focus:outline-none focus:ring-2 focus:ring-[#0071e3]/40 focus:ring-inset"
                     style={{
                       gridTemplateColumns: `${GANTT_LEFT_PANEL_WIDTH}px ${timelineWidth}px`,

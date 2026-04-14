@@ -123,6 +123,7 @@ export function TaskFormModal({
   );
   const [dependencyQuery, setDependencyQuery] = useState("");
   const defaultTriggerText = typeof triggerLabel === "string" ? triggerLabel : undefined;
+  const defaultTaskTriggerLabel = task && defaultMode === "view" ? "Task Details" : defaultTriggerText;
   const formRef = useRef<HTMLFormElement>(null);
   const closeSourceRef = useRef("initial");
   const skipUnsavedWarningRef = useRef(false);
@@ -301,8 +302,8 @@ export function TaskFormModal({
         renderTrigger({
           open: openModal,
           defaultMode,
-          ariaLabel: triggerAriaLabel ?? defaultTriggerText,
-          title: triggerTitle ?? triggerAriaLabel ?? defaultTriggerText
+          ariaLabel: triggerAriaLabel ?? defaultTaskTriggerLabel,
+          title: triggerTitle ?? triggerAriaLabel ?? defaultTaskTriggerLabel
         })
       ) : (
         <Button

@@ -64,8 +64,8 @@ export function TaskTable({
                       <button
                         type="button"
                         onClick={open}
-                        aria-label={ariaLabel ?? `View task ${task.title}`}
-                        title={title ?? `View task ${task.title}`}
+                        aria-label={ariaLabel ?? `Task Details for ${task.title}`}
+                        title={title ?? "Task Details"}
                         className="cursor-pointer break-words text-left font-medium text-slate-950 transition hover:text-[#00ADB1] hover:underline focus:outline-none focus:text-[#00ADB1]"
                       >
                         {task.title}
@@ -177,8 +177,8 @@ export function TaskTable({
                         <button
                           type="button"
                           onClick={open}
-                          aria-label={ariaLabel ?? `View task ${task.title}`}
-                          title={title ?? `View task ${task.title}`}
+                          aria-label={ariaLabel ?? `Task Details for ${task.title}`}
+                          title={title ?? "Task Details"}
                           className="cursor-pointer text-left font-medium text-slate-950 transition hover:text-[#00ADB1] hover:underline focus:outline-none focus:text-[#00ADB1]"
                         >
                           {task.title}

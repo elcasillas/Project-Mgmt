@@ -207,16 +207,20 @@ export async function saveTaskAction(formData: FormData) {
     .eq("id", savedTaskId)
     .single();
 
+  let savedTask = null;
   if (savedTaskError || !savedTaskRow) {
-    return {
-      ok: false,
-      message: savedTaskError?.message || "Task saved, but the updated task could not be reloaded."
-    };
-  }
-
-  const savedTask = mapTaskRecord(savedTaskRow);
-  if (process.env.NODE_ENV !== "production") {
-    console.info("[saveTaskAction] saved task after reload", { taskId: savedTaskId, payload, savedTaskRow, savedTask });
+    if (process.env.NODE_ENV !== "production") {
+      console.error("[saveTaskAction] reload after save failed", {
+        taskId: savedTaskId,
+        payload,
+        savedTaskError
+      });
+    }
+  } else {
+    savedTask = mapTaskRecord(savedTaskRow);
+    if (process.env.NODE_ENV !== "production") {
+      console.info("[saveTaskAction] saved task after reload", { taskId: savedTaskId, payload, savedTaskRow, savedTask });
+    }
   }
 
   revalidatePath("/dashboard");

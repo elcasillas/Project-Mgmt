@@ -752,6 +752,13 @@ export function TaskFormModal({
                         router.push(`${redirectPath}?success=${encodeURIComponent(result.message)}` as Route);
                       }
                       router.refresh();
+                    } catch (saveError) {
+                      const message = saveError instanceof Error ? saveError.message : "Unable to save task.";
+                      logTaskModalDebug("TASK_SAVE_EXCEPTION", {
+                        activeTaskId: activeTask?.id ?? null,
+                        message
+                      });
+                      setError(message);
                     } finally {
                       setIsSaving(false);
                     }

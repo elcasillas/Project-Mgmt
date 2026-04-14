@@ -131,7 +131,7 @@ export function TaskFormModal({
 
     setOpen(false);
   };
-  const { confirmOpen, requestClose, confirmLeave, stay, markClean } = useUnsavedChangesGuard({
+  const { confirmOpen, requestClose, confirmLeave, stay, markCleanUntilNextChange } = useUnsavedChangesGuard({
     formRef,
     open: open && modalMode === "edit",
     onDiscard: handleModalDismiss,
@@ -167,14 +167,14 @@ export function TaskFormModal({
     }
 
     const frame = window.requestAnimationFrame(() => {
-      markClean();
+      markCleanUntilNextChange();
       pendingBaselineResetRef.current = false;
     });
 
     return () => {
       window.cancelAnimationFrame(frame);
     };
-  }, [formKey, markClean, modalMode, open]);
+  }, [formKey, markCleanUntilNextChange, modalMode, open]);
 
   useEffect(() => {
     if (!open) {

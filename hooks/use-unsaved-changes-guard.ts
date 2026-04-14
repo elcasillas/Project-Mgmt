@@ -31,6 +31,7 @@ export function useUnsavedChangesGuard({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const initialSnapshotRef = useRef("");
   const pendingActionRef = useRef<(() => void) | null>(null);
+  const bypassDirtyGuardRef = useRef(false);
   const bypassPopRef = useRef(false);
   const popGuardActiveRef = useRef(false);
 
@@ -43,9 +44,14 @@ export function useUnsavedChangesGuard({
     pendingActionRef.current = null;
   }, [formRef]);
 
+  const markCleanUntilNextChange = useCallback(() => {
+    markClean();
+    bypassDirtyGuardRef.current = true;
+  }, [markClean]);
+
   const requestLeave = useCallback(
     (action: () => void) => {
-      if (!open || !isDirty) {
+      if (!open || !isDirty || bypassDirtyGuardRef.current) {
         action();
         return;
       }
@@ -69,7 +75,11 @@ export function useUnsavedChangesGuard({
     });
 
     const updateDirtyState = () => {
-      setIsDirty(serializeForm(form) !== initialSnapshotRef.current);
+      const nextIsDirty = serializeForm(form) !== initialSnapshotRef.current;
+      if (nextIsDirty) {
+        bypassDirtyGuardRef.current = false;
+      }
+      setIsDirty(nextIsDirty);
     };
 
     form.addEventListener("input", updateDirtyState);
@@ -184,6 +194,7 @@ export function useUnsavedChangesGuard({
       pendingActionRef.current = null;
       setConfirmOpen(false);
     },
-    markClean
+    markClean,
+    markCleanUntilNextChange
   };
 }

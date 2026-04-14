@@ -7,11 +7,13 @@ export function AuthShell({
   title,
   description,
   heroTitle = "Project execution with the clarity of an executive operating rhythm.",
+  showMobileLogo = false,
   children
 }: {
   title: string;
-  description: string;
+  description?: string;
   heroTitle?: string;
+  showMobileLogo?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -32,13 +34,18 @@ export function AuthShell({
         </div>
       </div>
       <div className="flex flex-1 items-center justify-center p-6 lg:p-10">
-        <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 text-slate-900">
-          <div className="mb-8">
+        <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 text-slate-900 sm:p-8">
+          <div className="mb-6 sm:mb-8">
+            {showMobileLogo ? (
+              <div className="mb-6 flex justify-center lg:hidden">
+                <Image src={logo} alt="Casibros" className="h-12 w-auto invert sm:h-14" priority />
+              </div>
+            ) : null}
             <Link href="/" className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-600">
               {APP_NAME}
             </Link>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight">{title}</h2>
-            <p className="mt-2 text-sm text-slate-500">{description}</p>
+            {description ? <p className="mt-2 text-sm text-slate-500">{description}</p> : null}
           </div>
           {children}
         </div>

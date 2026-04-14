@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { mapTaskRecord, normalizeTaskPurchaseItems, TASK_WITH_RELATIONS_SELECT } from "@/lib/data/task-record";
 import { createClient } from "@/lib/supabase/server";
 
 function splitCsv(value: string) {
@@ -11,30 +12,13 @@ function splitCsv(value: string) {
     .filter(Boolean);
 }
 
-function normalizeTaskPurchaseItems(value: FormDataEntryValue | null) {
+function parseTaskPurchaseItems(value: FormDataEntryValue | null) {
   if (typeof value !== "string" || !value.trim()) {
     return [];
   }
 
   try {
-    const parsed = JSON.parse(value);
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    return parsed.flatMap((item) => {
-      if (typeof item !== "object" || item === null) {
-        return [];
-      }
-
-      const id = typeof item.id === "string" && item.id.trim() ? item.id.trim() : crypto.randomUUID();
-      const name = typeof item.name === "string" ? item.name.trim() : "";
-      if (!name) {
-        return [];
-      }
-
-      return [{ id, name }];
-    });
+    return normalizeTaskPurchaseItems(JSON.parse(value));
   } catch {
     return [];
   }
@@ -158,7 +142,11 @@ export async function archiveProjectAction(formData: FormData) {
 export async function saveTaskAction(formData: FormData) {
   const { supabase, user } = await requireViewer();
   const taskId = String(formData.get("id") || "");
-  const purchaseItems = normalizeTaskPurchaseItems(formData.get("purchase_items"));
+  const rawPurchaseItems = formData.get("purchase_items");
+  const purchaseItems = parseTaskPurchaseItems(rawPurchaseItems);
+  if (process.env.NODE_ENV !== "production") {
+    console.info("[saveTaskAction] purchaseItems before save", { taskId, rawPurchaseItems, purchaseItems });
+  }
   const payload = {
     project_id: String(formData.get("project_id") || "") || null,
     title: String(formData.get("title") || ""),
@@ -213,6 +201,24 @@ export async function saveTaskAction(formData: FormData) {
     }
   }
 
+  const { data: savedTaskRow, error: savedTaskError } = await supabase
+    .from("tasks")
+    .select(TASK_WITH_RELATIONS_SELECT)
+    .eq("id", savedTaskId)
+    .single();
+
+  if (savedTaskError || !savedTaskRow) {
+    return {
+      ok: false,
+      message: savedTaskError?.message || "Task saved, but the updated task could not be reloaded."
+    };
+  }
+
+  const savedTask = mapTaskRecord(savedTaskRow);
+  if (process.env.NODE_ENV !== "production") {
+    console.info("[saveTaskAction] saved task after reload", { taskId: savedTaskId, payload, savedTaskRow, savedTask });
+  }
+
   revalidatePath("/dashboard");
   revalidatePath("/tasks");
   if (payload.project_id) {
@@ -220,7 +226,8 @@ export async function saveTaskAction(formData: FormData) {
   }
   return {
     ok: true,
-    message: taskId ? "Task updated." : "Task created."
+    message: taskId ? "Task updated." : "Task created.",
+    task: savedTask
   };
 }
 

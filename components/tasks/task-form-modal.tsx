@@ -92,16 +92,21 @@ export function TaskFormModal({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const defaultMode: ModalMode = task ? (initialMode ?? "edit") : "create";
+  const [persistedTask, setPersistedTask] = useState<Task | undefined>(task);
   const [modalMode, setModalMode] = useState<ModalMode>(defaultMode);
   const [returnToViewOnEditExit, setReturnToViewOnEditExit] = useState(defaultMode === "view");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [selectedProjectId, setSelectedProjectId] = useState(task?.project_id ?? initialProjectId ?? "");
-  const [selectedDependencyIds, setSelectedDependencyIds] = useState<string[]>(task?.dependency_ids ?? []);
-  const [purchaseItems, setPurchaseItems] = useState<TaskPurchaseItem[]>(task?.purchaseItems?.length ? task.purchaseItems : [createEmptyPurchaseItem()]);
+  const activeTask = persistedTask ?? task;
+  const [selectedProjectId, setSelectedProjectId] = useState(activeTask?.project_id ?? initialProjectId ?? "");
+  const [selectedDependencyIds, setSelectedDependencyIds] = useState<string[]>(activeTask?.dependency_ids ?? []);
+  const [purchaseItems, setPurchaseItems] = useState<TaskPurchaseItem[]>(
+    activeTask?.purchaseItems?.length ? activeTask.purchaseItems : [createEmptyPurchaseItem()]
+  );
   const [dependencyQuery, setDependencyQuery] = useState("");
   const defaultTriggerText = typeof triggerLabel === "string" ? triggerLabel : undefined;
   const formRef = useRef<HTMLFormElement>(null);
+  const formKey = `${activeTask?.id ?? "new"}:${activeTask?.updated_at ?? "draft"}:${modalMode}`;
   const addPurchaseItem = () => {
     setPurchaseItems((current) => [...current, createEmptyPurchaseItem()]);
   };
@@ -131,11 +136,11 @@ export function TaskFormModal({
     onDiscard: handleModalDismiss
   });
   const selectedProject = projects.find((projectOption) => projectOption.id === selectedProjectId);
-  const dependencyNames = task ? resolveTaskDependencyNames(task, availableTasks) : [];
+  const dependencyNames = activeTask ? resolveTaskDependencyNames(activeTask, availableTasks) : [];
   const sectionClassName = "rounded-[12px] bg-white p-5 shadow-[rgba(0,0,0,0.08)_0px_12px_32px]";
   const sectionHeadingClassName = "text-[21px] font-semibold leading-[1.19] tracking-[0.01em] text-[#1d1d1f]";
   const availableDependencyTasks = availableTasks.filter(
-    (candidateTask) => candidateTask.project_id === selectedProjectId && candidateTask.id !== task?.id
+    (candidateTask) => candidateTask.project_id === selectedProjectId && candidateTask.id !== activeTask?.id
   );
   const filteredDependencyTasks = availableDependencyTasks.filter((candidateTask) => {
     const query = dependencyQuery.trim().toLowerCase();
@@ -151,18 +156,22 @@ export function TaskFormModal({
   });
 
   useEffect(() => {
+    setPersistedTask(task);
+  }, [task]);
+
+  useEffect(() => {
     if (!open) {
       return;
     }
 
     setModalMode(defaultMode);
     setReturnToViewOnEditExit(defaultMode === "view");
-    setSelectedProjectId(task?.project_id ?? initialProjectId ?? "");
-    setSelectedDependencyIds(task?.dependency_ids ?? []);
-    setPurchaseItems(task?.purchaseItems?.length ? task.purchaseItems : [createEmptyPurchaseItem()]);
+    setSelectedProjectId(activeTask?.project_id ?? initialProjectId ?? "");
+    setSelectedDependencyIds(activeTask?.dependency_ids ?? []);
+    setPurchaseItems(activeTask?.purchaseItems?.length ? activeTask.purchaseItems : [createEmptyPurchaseItem()]);
     setDependencyQuery("");
     setError(null);
-  }, [defaultMode, initialProjectId, open, task]);
+  }, [activeTask, defaultMode, initialProjectId, open]);
 
   useEffect(() => {
     if (!selectedProjectId) {
@@ -172,11 +181,11 @@ export function TaskFormModal({
 
     const validDependencyIds = new Set(
       availableTasks
-        .filter((candidateTask) => candidateTask.project_id === selectedProjectId && candidateTask.id !== task?.id)
+        .filter((candidateTask) => candidateTask.project_id === selectedProjectId && candidateTask.id !== activeTask?.id)
         .map((candidateTask) => candidateTask.id)
     );
     setSelectedDependencyIds((current) => current.filter((dependencyId) => validDependencyIds.has(dependencyId)));
-  }, [selectedProjectId, task?.id, availableTasks]);
+  }, [selectedProjectId, activeTask?.id, availableTasks]);
 
   return (
     <>
@@ -215,7 +224,7 @@ export function TaskFormModal({
         }
         panelClassName={TASK_MODAL_PANEL_CLASS}
         headerActions={
-          task && modalMode === "view" ? (
+          activeTask && modalMode === "view" ? (
             <Button
               variant="ghost"
               size="sm"
@@ -233,30 +242,30 @@ export function TaskFormModal({
         }
       >
         {error ? <p className="mb-4 rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p> : null}
-        {modalMode === "view" && task ? (
+        {modalMode === "view" && activeTask ? (
           <div className="space-y-6">
             <section className="rounded-[12px] bg-[#1d1d1f] px-5 py-6 text-white sm:px-6">
               <div className="min-w-0">
                 <p className="text-[12px] font-semibold uppercase tracking-[0.22em] text-white/55">Task overview</p>
                 <h3 className="mt-3 text-[28px] font-semibold leading-[1.14] tracking-[-0.02em] break-words sm:text-[32px]">
-                  {task.title}
+                  {activeTask.title}
                 </h3>
                 <p className="mt-4 max-w-3xl text-[15px] leading-[1.47] tracking-[-0.01em] text-white/78">
-                  {task.description || "No description provided."}
+                  {activeTask.description || "No description provided."}
                 </p>
               </div>
             </section>
 
             <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.95fr)]">
               <section className="space-y-4">
-                <DetailField label="Project" value={task.project?.name ?? "Not set"} />
+                <DetailField label="Project" value={activeTask.project?.name ?? "Not set"} />
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <DetailField label="Assignee" value={task.assignee?.full_name ?? "Not set"} />
-                  <DetailField label="Reporter" value={task.reporter?.full_name ?? "Not set"} />
+                  <DetailField label="Assignee" value={activeTask.assignee?.full_name ?? "Not set"} />
+                  <DetailField label="Reporter" value={activeTask.reporter?.full_name ?? "Not set"} />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <DetailField label="Start date" value={formatTaskDate(task.start_date)} />
-                  <DetailField label="Due date" value={formatTaskDate(task.due_date)} />
+                  <DetailField label="Start date" value={formatTaskDate(activeTask.start_date)} />
+                  <DetailField label="Due date" value={formatTaskDate(activeTask.due_date)} />
                 </div>
               </section>
 
@@ -265,7 +274,7 @@ export function TaskFormModal({
                   label="Status"
                   value={
                     <div className="flex flex-wrap gap-2">
-                      <Badge value={task.status} />
+                      <Badge value={activeTask.status} />
                     </div>
                   }
                 />
@@ -273,7 +282,7 @@ export function TaskFormModal({
                   label="Priority"
                   value={
                     <div className="flex flex-wrap gap-2">
-                      <Badge value={task.priority} />
+                      <Badge value={activeTask.priority} />
                     </div>
                   }
                 />
@@ -284,7 +293,7 @@ export function TaskFormModal({
                       <div className="flex flex-wrap gap-2">
                         {dependencyNames.map((dependencyName) => (
                           <span
-                            key={`${task.id}:${dependencyName}`}
+                            key={`${activeTask.id}:${dependencyName}`}
                             className="inline-flex rounded-full bg-[#f5f5f7] px-3 py-1 text-[14px] font-medium tracking-[-0.01em] text-[rgba(29,29,31,0.72)]"
                           >
                             {dependencyName}
@@ -299,17 +308,17 @@ export function TaskFormModal({
                 <DetailField
                   label="Hours"
                   value={
-                    task.actual_hours == null && task.estimated_hours == null
+                    activeTask.actual_hours == null && activeTask.estimated_hours == null
                       ? "Not set"
-                      : `${task.actual_hours ?? 0} / ${task.estimated_hours ?? 0}`
+                      : `${activeTask.actual_hours ?? 0} / ${activeTask.estimated_hours ?? 0}`
                   }
                 />
                 <DetailField
                   label="Purchase Items"
                   value={
-                    task.purchaseItems?.length ? (
+                    activeTask.purchaseItems?.length ? (
                       <ul className="space-y-2 text-[15px] font-medium leading-[1.45] text-[#1d1d1f]">
-                        {task.purchaseItems.map((item) => (
+                        {activeTask.purchaseItems.map((item) => (
                           <li key={item.id} className="rounded-[10px] bg-[#f5f5f7] px-3 py-2">
                             {item.name}
                           </li>
@@ -331,19 +340,20 @@ export function TaskFormModal({
           </div>
         ) : (
           <form
+            key={formKey}
             ref={formRef}
             className="space-y-6"
             onSubmit={(event) => {
               event.preventDefault();
             }}
           >
-            <input type="hidden" name="id" value={task?.id ?? ""} />
+            <input type="hidden" name="id" value={activeTask?.id ?? ""} />
             <div className="rounded-[12px] bg-[#1d1d1f] px-5 py-6 text-white">
               <p className="text-[12px] font-semibold uppercase tracking-[0.22em] text-white/55">
-                {task ? "Task refinement" : "Task creation"}
+                {activeTask ? "Task refinement" : "Task creation"}
               </p>
               <h3 className="mt-3 text-[28px] font-semibold leading-[1.14] tracking-[-0.02em]">
-                {task ? task.title : "Define the work clearly before execution starts."}
+                {activeTask ? activeTask.title : "Define the work clearly before execution starts."}
               </h3>
             </div>
 
@@ -357,7 +367,7 @@ export function TaskFormModal({
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="md:col-span-2">
                   <FormField label="Title">
-                    <Input name="title" defaultValue={task?.title} required />
+                    <Input name="title" defaultValue={activeTask?.title} required />
                   </FormField>
                 </div>
                 <FormField label="Project">
@@ -386,7 +396,7 @@ export function TaskFormModal({
                   )}
                 </FormField>
                 <FormField label="Status">
-                  <Select name="status" defaultValue={task?.status ?? "Not Started"}>
+                  <Select name="status" defaultValue={activeTask?.status ?? "Not Started"}>
                     {TASK_STATUSES.map((status) => (
                       <option key={status} value={status}>
                         {status}
@@ -395,7 +405,7 @@ export function TaskFormModal({
                   </Select>
                 </FormField>
                 <FormField label="Priority">
-                  <Select name="priority" defaultValue={task?.priority ?? "Medium"}>
+                  <Select name="priority" defaultValue={activeTask?.priority ?? "Medium"}>
                     {TASK_PRIORITIES.map((priority) => (
                       <option key={priority} value={priority}>
                         {priority}
@@ -405,7 +415,7 @@ export function TaskFormModal({
                 </FormField>
                 <div className="md:col-span-2">
                   <FormField label="Description">
-                    <Textarea name="description" defaultValue={task?.description ?? ""} className="min-h-[140px]" />
+                    <Textarea name="description" defaultValue={activeTask?.description ?? ""} className="min-h-[140px]" />
                   </FormField>
                 </div>
               </div>
@@ -420,7 +430,7 @@ export function TaskFormModal({
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField label="Assignee">
-                  <Select name="assignee_id" defaultValue={task?.assignee_id ?? ""}>
+                  <Select name="assignee_id" defaultValue={activeTask?.assignee_id ?? ""}>
                     <option value="">Unassigned</option>
                     {profiles.map((profile) => (
                       <option key={profile.id} value={profile.id}>
@@ -430,7 +440,7 @@ export function TaskFormModal({
                   </Select>
                 </FormField>
                 <FormField label="Reporter">
-                  <Select name="reporter_id" defaultValue={task?.reporter_id ?? ""}>
+                  <Select name="reporter_id" defaultValue={activeTask?.reporter_id ?? ""}>
                     {profiles.map((profile) => (
                       <option key={profile.id} value={profile.id}>
                         {profile.full_name}
@@ -439,16 +449,16 @@ export function TaskFormModal({
                   </Select>
                 </FormField>
                 <FormField label="Start date">
-                  <Input name="start_date" type="date" defaultValue={getTaskDateInputValue(task?.start_date)} />
+                  <Input name="start_date" type="date" defaultValue={getTaskDateInputValue(activeTask?.start_date)} />
                 </FormField>
                 <FormField label="Due date">
-                  <Input name="due_date" type="date" defaultValue={getTaskDateInputValue(task?.due_date)} />
+                  <Input name="due_date" type="date" defaultValue={getTaskDateInputValue(activeTask?.due_date)} />
                 </FormField>
                 <FormField label="Estimated hours">
-                  <Input name="estimated_hours" type="number" step="0.5" defaultValue={task?.estimated_hours ?? ""} />
+                  <Input name="estimated_hours" type="number" step="0.5" defaultValue={activeTask?.estimated_hours ?? ""} />
                 </FormField>
                 <FormField label="Actual hours">
-                  <Input name="actual_hours" type="number" step="0.5" defaultValue={task?.actual_hours ?? ""} />
+                  <Input name="actual_hours" type="number" step="0.5" defaultValue={activeTask?.actual_hours ?? ""} />
                 </FormField>
               </div>
             </section>
@@ -594,6 +604,12 @@ export function TaskFormModal({
                     }
 
                     const formData = new FormData(formRef.current);
+                    if (process.env.NODE_ENV !== "production") {
+                      console.info("[TaskFormModal] purchaseItems before submit", {
+                        taskId: activeTask?.id ?? null,
+                        purchaseItems
+                      });
+                    }
                     startTransition(async () => {
                       setError(null);
                       const result = await saveTaskAction(formData);
@@ -601,8 +617,15 @@ export function TaskFormModal({
                         setError(result?.message || "Unable to save task.");
                         return;
                       }
+                      if (result.task) {
+                        setPersistedTask(result.task);
+                        setPurchaseItems(result.task.purchaseItems?.length ? result.task.purchaseItems : [createEmptyPurchaseItem()]);
+                        if (process.env.NODE_ENV !== "production") {
+                          console.info("[TaskFormModal] normalized task after save", result.task);
+                        }
+                      }
                       markClean();
-                      if (task && returnToViewOnEditExit) {
+                      if (activeTask && returnToViewOnEditExit) {
                         setModalMode("view");
                         router.refresh();
                         return;
@@ -616,7 +639,7 @@ export function TaskFormModal({
                     });
                   }}
                 >
-                  {isPending ? "Saving..." : task ? "Save" : "Create task"}
+                  {isPending ? "Saving..." : activeTask ? "Save" : "Create task"}
                 </Button>
               </div>
             </div>

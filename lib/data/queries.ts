@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { ensureProfileForUser } from "@/lib/supabase/profiles";
 import { isApproaching, isDueThisWeek, isOverdue } from "@/lib/utils/format";
+import { mapTaskRecord, TASK_WITH_RELATIONS_SELECT } from "@/lib/data/task-record";
 import type {
   ActivityLog,
   Attachment,
@@ -11,26 +12,6 @@ import type {
   Task,
   UserDirectoryEntry
 } from "@/lib/types/domain";
-
-function mapTaskPurchaseItems(value: unknown) {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value.flatMap((item) => {
-    if (typeof item !== "object" || item === null) {
-      return [];
-    }
-
-    const id = typeof item.id === "string" ? item.id : "";
-    const name = typeof item.name === "string" ? item.name.trim() : "";
-    if (!id || !name) {
-      return [];
-    }
-
-    return [{ id, name }];
-  });
-}
 
 function serializeError(error: unknown) {
   if (error instanceof Error) {
@@ -113,40 +94,6 @@ function mapAttachment(row: any): Attachment {
     uploaded_by: row.uploaded_by,
     created_at: row.created_at,
     uploader: row.uploader ? mapProfile(row.uploader) : undefined
-  };
-}
-
-function mapTask(row: any): Task {
-  return {
-    id: row.id,
-    project_id: row.project_id,
-    title: row.title,
-    description: row.description,
-    status: row.status,
-    priority: row.priority,
-    assignee_id: row.assignee_id,
-    reporter_id: row.reporter_id,
-    start_date: row.start_date,
-    due_date: row.due_date,
-    estimated_hours: row.estimated_hours,
-    actual_hours: row.actual_hours,
-    created_at: row.created_at,
-    updated_at: row.updated_at,
-    assignee: row.assignee ? mapProfile(row.assignee) : null,
-    reporter: row.reporter ? mapProfile(row.reporter) : null,
-    project: row.projects
-      ? {
-          id: row.projects.id,
-          name: row.projects.name,
-          status: row.projects.status,
-          priority: row.projects.priority,
-          progress: row.projects.progress
-        }
-      : null,
-    dependency_ids: Array.isArray(row.task_dependencies)
-      ? row.task_dependencies.map((entry: any) => entry.depends_on_task_id)
-      : [],
-    purchaseItems: mapTaskPurchaseItems(row.purchase_items)
   };
 }
 
@@ -252,15 +199,7 @@ export async function getProjectDetail(projectId: string) {
         .single(),
       supabase
         .from("tasks")
-        .select(
-          `
-            *,
-            assignee:profiles!tasks_assignee_id_fkey(*),
-            reporter:profiles!tasks_reporter_id_fkey(*),
-            projects(id, name, status, priority, progress),
-            task_dependencies!task_dependencies_task_id_fkey(depends_on_task_id)
-          `
-        )
+        .select(TASK_WITH_RELATIONS_SELECT)
         .eq("project_id", projectId)
         .order("updated_at", { ascending: false }),
       supabase
@@ -290,7 +229,7 @@ export async function getProjectDetail(projectId: string) {
 
     return {
       project: mapProject(projectResult.data),
-      tasks: (tasksResult.data ?? []).map(mapTask),
+      tasks: (tasksResult.data ?? []).map(mapTaskRecord),
       activity: (activityResult.data ?? []).map(mapActivity),
       comments: (commentsResult.data ?? []).map((row: any) => ({
         id: row.id,
@@ -313,22 +252,14 @@ export async function getTasks() {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("tasks")
-      .select(
-        `
-          *,
-          assignee:profiles!tasks_assignee_id_fkey(*),
-          reporter:profiles!tasks_reporter_id_fkey(*),
-          projects(id, name, status, priority, progress),
-          task_dependencies!task_dependencies_task_id_fkey(depends_on_task_id)
-        `
-      )
+      .select(TASK_WITH_RELATIONS_SELECT)
       .order("updated_at", { ascending: false });
 
     if (error) {
       throw error;
     }
 
-    return (data ?? []).map(mapTask);
+    return (data ?? []).map(mapTaskRecord);
   } catch (error) {
     logQueryError("getTasks", error);
     throw error;
@@ -340,15 +271,7 @@ export async function getTaskDetail(taskId: string) {
   const [taskResult, commentsResult, attachmentsResult] = await Promise.all([
     supabase
       .from("tasks")
-      .select(
-        `
-          *,
-          assignee:profiles!tasks_assignee_id_fkey(*),
-          reporter:profiles!tasks_reporter_id_fkey(*),
-          projects(id, name, status, priority, progress),
-          task_dependencies!task_dependencies_task_id_fkey(depends_on_task_id)
-        `
-      )
+      .select(TASK_WITH_RELATIONS_SELECT)
       .eq("id", taskId)
       .single(),
     supabase
@@ -368,7 +291,7 @@ export async function getTaskDetail(taskId: string) {
   }
 
   return {
-    task: mapTask(taskResult.data),
+    task: mapTaskRecord(taskResult.data),
     comments: (commentsResult.data ?? []).map((row: any) => ({
       id: row.id,
       task_id: row.task_id,

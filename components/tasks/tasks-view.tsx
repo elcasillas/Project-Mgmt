@@ -175,10 +175,8 @@ export function TasksView({
                 <p className="mt-2 font-medium text-slate-900">{formatDate(selectedTask.due_date)}</p>
               </div>
               <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Hours</p>
-                <p className="mt-2 font-medium text-slate-900">
-                  {selectedTask.actual_hours ?? 0} / {selectedTask.estimated_hours ?? 0}
-                </p>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Estimated hours</p>
+                <p className="mt-2 font-medium text-slate-900">{selectedTask.estimated_hours ?? "Not set"}</p>
               </div>
             </div>
             <div className="rounded-2xl bg-slate-50 p-4">

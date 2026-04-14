@@ -44,7 +44,6 @@ export function mapTaskRecord(row: any): Task {
     start_date: row.start_date,
     due_date: row.due_date,
     estimated_hours: row.estimated_hours,
-    actual_hours: row.actual_hours,
     created_at: row.created_at,
     updated_at: row.updated_at,
     assignee: row.assignee

@@ -66,7 +66,6 @@ create table if not exists public.tasks (
   start_date date,
   due_date date,
   estimated_hours numeric(8,2),
-  actual_hours numeric(8,2),
   purchase_items jsonb not null default '[]'::jsonb,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())

@@ -414,11 +414,9 @@ export function TaskFormModal({
                   }
                 />
                 <DetailField
-                  label="Hours"
+                  label="Estimated Hours"
                   value={
-                    activeTask.actual_hours == null && activeTask.estimated_hours == null
-                      ? "Not set"
-                      : `${activeTask.actual_hours ?? 0} / ${activeTask.estimated_hours ?? 0}`
+                    activeTask.estimated_hours == null ? "Not set" : activeTask.estimated_hours
                   }
                 />
                 <DetailField
@@ -564,9 +562,6 @@ export function TaskFormModal({
                 </FormField>
                 <FormField label="Estimated hours">
                   <Input name="estimated_hours" type="number" step="0.5" defaultValue={activeTask?.estimated_hours ?? ""} />
-                </FormField>
-                <FormField label="Actual hours">
-                  <Input name="actual_hours" type="number" step="0.5" defaultValue={activeTask?.actual_hours ?? ""} />
                 </FormField>
               </div>
             </section>

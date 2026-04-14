@@ -158,7 +158,6 @@ export async function saveTaskAction(formData: FormData) {
     start_date: String(formData.get("start_date") || "") || null,
     due_date: String(formData.get("due_date") || "") || null,
     estimated_hours: Number(formData.get("estimated_hours") || 0) || null,
-    actual_hours: Number(formData.get("actual_hours") || 0) || null,
     purchase_items: purchaseItems
   };
 

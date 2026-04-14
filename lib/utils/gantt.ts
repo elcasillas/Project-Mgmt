@@ -64,10 +64,6 @@ export function getTaskProgressValue(task: Task) {
     return 100;
   }
 
-  if (typeof task.actual_hours === "number" && typeof task.estimated_hours === "number" && task.estimated_hours > 0) {
-    return clampProgress((task.actual_hours / task.estimated_hours) * 100);
-  }
-
   const statusFallbacks: Record<Task["status"], number> = {
     "Not Started": 0,
     "In Progress": 55,

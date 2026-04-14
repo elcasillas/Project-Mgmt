@@ -4,6 +4,7 @@ import { Eye, Pencil, Plus, Trash } from "lucide-react";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { ConfirmationDialog } from "@/components/shared/confirmation-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -738,17 +739,19 @@ export function TaskFormModal({
                         setPersistedTask(result.task);
                         setPurchaseItems(result.task.purchaseItems?.length ? result.task.purchaseItems : [createEmptyPurchaseItem()]);
                       }
-                      markTaskFormClean("save-success", { untilNextChange: true });
+                      logTaskModalDebug("TASK_SAVE_SUCCESS_CLOSE", {
+                        activeTaskId: result.task?.id ?? activeTask?.id ?? null
+                      });
+                      flushSync(() => {
+                        closeSourceRef.current = "save-success";
+                        markTaskFormClean("save-success-close", { untilNextChange: true });
+                        setOpen(false);
+                      });
                       logTaskModalDebug("TASK_DIRTY_STATE_AFTER_CLEAN", {
                         activeTaskId: result.task?.id ?? activeTask?.id ?? null,
                         isDirty: false,
                         skip: true
                       });
-                      logTaskModalDebug("TASK_SAVE_SUCCESS_CLOSE", {
-                        activeTaskId: result.task?.id ?? activeTask?.id ?? null
-                      });
-                      closeSourceRef.current = "save-success";
-                      setOpen(false);
                       if (redirectPath) {
                         router.push(`${redirectPath}?success=${encodeURIComponent(result.message)}` as Route);
                       }

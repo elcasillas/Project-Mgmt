@@ -130,6 +130,14 @@ export function TaskFormModal({
 
     setOpen(false);
   };
+  const handleRequestClose = () => {
+    if (modalMode !== "edit") {
+      handleModalDismiss();
+      return;
+    }
+
+    requestClose();
+  };
   const { confirmOpen, requestClose, confirmLeave, stay, markCleanUntilNextChange } = useUnsavedChangesGuard({
     formRef,
     open: open && modalMode === "edit",
@@ -216,7 +224,7 @@ export function TaskFormModal({
       )}
       <Modal
         open={open}
-        onClose={requestClose}
+        onClose={handleRequestClose}
         title={modalMode === "create" ? "Create Task" : modalMode === "edit" ? "Edit Task" : "Task Details"}
         description={
           modalMode === "view"
@@ -334,7 +342,7 @@ export function TaskFormModal({
             </div>
 
             <div className="flex justify-end border-t border-[rgba(29,29,31,0.08)] pt-2">
-              <Button type="button" variant="ghost" onClick={requestClose} className="max-sm:w-full">
+              <Button type="button" variant="ghost" onClick={handleRequestClose} className="max-sm:w-full">
                 Close
               </Button>
             </div>

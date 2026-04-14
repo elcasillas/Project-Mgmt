@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Trash } from "lucide-react";
 import { removeUserAction } from "@/lib/actions/users";
 import { ConfirmationDialog } from "@/components/shared/confirmation-dialog";
 import { Button } from "@/components/ui/button";
@@ -12,11 +13,20 @@ export function RemoveUserModal({ user }: { user: UserDirectoryEntry }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const deleteButtonClassName =
+    "h-9 w-9 rounded-md border border-gray-200 bg-transparent p-0 text-slate-700 hover:bg-gray-100 hover:text-red-600 active:text-red-600 focus:outline-none focus:ring-2 focus:ring-[#00ADB1]";
 
   return (
     <>
-      <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
-        Remove
+      <Button
+        variant="ghost"
+        size="sm"
+        className={deleteButtonClassName}
+        onClick={() => setOpen(true)}
+        aria-label="Delete user"
+        title="Delete"
+      >
+        <Trash className="h-4 w-4" />
       </Button>
       <ConfirmationDialog
         open={open}

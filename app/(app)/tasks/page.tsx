@@ -1,7 +1,8 @@
 import { PageHeader } from "@/components/shared/page-header";
 import { TasksView } from "@/components/tasks/tasks-view";
 import { Card } from "@/components/ui/card";
-import { getProjects, getTaskAttachments, getTasks, getTeamMembers } from "@/lib/data/queries";
+import { getCurrentProfile, getProjects, getTaskAttachments, getTasks, getTeamMembers } from "@/lib/data/queries";
+import { canManageTasks } from "@/lib/utils/permissions";
 
 export default async function TasksPage({
   searchParams
@@ -9,7 +10,7 @@ export default async function TasksPage({
   searchParams: Promise<{ task?: string; error?: string; success?: string }>;
 }) {
   const params = await searchParams;
-  const [tasks, projects, teamMembers] = await Promise.all([getTasks(), getProjects(), getTeamMembers()]);
+  const [tasks, projects, teamMembers, currentProfile] = await Promise.all([getTasks(), getProjects(), getTeamMembers(), getCurrentProfile()]);
   const attachments = await getTaskAttachments(params.task ? [params.task] : []);
   const profiles = teamMembers.map(({ activeProjects, assignedTasks, workloadSummary, ...profile }) => profile);
 
@@ -37,6 +38,7 @@ export default async function TasksPage({
         attachments={attachments}
         selectedTaskId={params.task}
         availableViews={["table", "kanban"]}
+        canEditTasks={canManageTasks(currentProfile?.role)}
       />
     </div>
   );

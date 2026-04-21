@@ -1,16 +1,22 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown, Trash } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { deleteTaskAction } from "@/lib/actions/workspace";
 import { ConfirmActionButton } from "@/components/shared/confirm-action-button";
+import { InlineTaskField } from "@/components/tasks/inline-task-field";
 import { TaskFormModal } from "@/components/tasks/task-form-modal";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { TASK_PRIORITIES, TASK_STATUSES } from "@/lib/data/constants";
 import { formatTaskDate } from "@/lib/utils/task-dates";
 import { sortTasksByDueDate, type DueDateSortDirection } from "@/lib/utils/task-sorting";
 import { resolveTaskDependencyNames } from "@/lib/utils/task-dependencies";
-import type { Profile, Project, Task } from "@/lib/types/domain";
+import type { Profile, Project, Task, TaskPriority, TaskStatus } from "@/lib/types/domain";
+
+type InlineTaskUpdate =
+  | { field: "status"; value: TaskStatus }
+  | { field: "priority"; value: TaskPriority };
 
 export function TaskTable({
   tasks,
@@ -29,13 +35,48 @@ export function TaskTable({
   canEditTasks?: boolean;
   redirectPath?: string;
 }) {
+  const router = useRouter();
   const [dueDateSort, setDueDateSort] = useState<DueDateSortDirection>("asc");
+  const [localTasks, setLocalTasks] = useState(tasks);
   const taskActionButtonClassName =
     "h-9 w-9 rounded-md border border-gray-200 bg-transparent p-0 text-slate-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#00ADB1]";
   const taskDeleteButtonClassName = `${taskActionButtonClassName} hover:text-red-600 active:text-red-600`;
   const taskDetailsLinkClassName =
     "inline-flex max-w-full items-center rounded-full px-2.5 py-1 text-left font-medium text-slate-950 transition-[background-color,color,box-shadow] hover:bg-[#00ADB1]/8 hover:text-[#008c90] focus:outline-none focus:ring-2 focus:ring-[#00ADB1]/30 focus:text-[#008c90]";
-  const visibleTasks = useMemo(() => sortTasksByDueDate(tasks, dueDateSort), [dueDateSort, tasks]);
+  const visibleTasks = useMemo(() => sortTasksByDueDate(localTasks, dueDateSort), [dueDateSort, localTasks]);
+
+  useEffect(() => {
+    setLocalTasks(tasks);
+  }, [tasks]);
+
+  async function updateTaskField(taskId: string, update: InlineTaskUpdate) {
+    const currentTask = localTasks.find((task) => task.id === taskId);
+    if (!currentTask || currentTask[update.field] === update.value) {
+      return;
+    }
+
+    setLocalTasks((current) => current.map((task) => (task.id === taskId ? { ...task, [update.field]: update.value } : task)));
+
+    try {
+      const response = await fetch(`/api/tasks/${taskId}/status`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(update)
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(payload?.error || `Unable to update task ${update.field}.`);
+      }
+
+      router.refresh();
+    } catch (error) {
+      setLocalTasks((current) => current.map((task) => (task.id === taskId ? { ...task, [update.field]: currentTask[update.field] } : task)));
+      throw error;
+    }
+  }
 
   if (!tasks.length) {
     return (
@@ -94,8 +135,20 @@ export function TaskTable({
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
-                <Badge value={task.status} />
-                <Badge value={task.priority} />
+                <InlineTaskField
+                  label="Status"
+                  value={task.status}
+                  options={TASK_STATUSES}
+                  editable={canEditTasks}
+                  onSave={(value) => updateTaskField(task.id, { field: "status", value })}
+                />
+                <InlineTaskField
+                  label="Priority"
+                  value={task.priority}
+                  options={TASK_PRIORITIES}
+                  editable={canEditTasks}
+                  onSave={(value) => updateTaskField(task.id, { field: "priority", value })}
+                />
               </div>
 
               <div className="mt-4 grid gap-3 rounded-2xl bg-slate-50 p-3 text-sm text-slate-600">
@@ -207,10 +260,22 @@ export function TaskTable({
                     )}
                   </td>
                   <td className="px-6 py-4 align-top">
-                    <Badge value={task.status} />
+                    <InlineTaskField
+                      label="Status"
+                      value={task.status}
+                      options={TASK_STATUSES}
+                      editable={canEditTasks}
+                      onSave={(value) => updateTaskField(task.id, { field: "status", value })}
+                    />
                   </td>
                   <td className="px-6 py-4 align-top">
-                    <Badge value={task.priority} />
+                    <InlineTaskField
+                      label="Priority"
+                      value={task.priority}
+                      options={TASK_PRIORITIES}
+                      editable={canEditTasks}
+                      onSave={(value) => updateTaskField(task.id, { field: "priority", value })}
+                    />
                   </td>
                   <td className="px-6 py-4 align-top text-slate-600">{task.assignee?.full_name ?? "Unassigned"}</td>
                   <td className="px-6 py-4 align-top text-slate-600">{formatTaskDate(task.due_date)}</td>

@@ -26,7 +26,8 @@ export function TasksView({
   initialView = "table",
   availableViews = ["table", "kanban", "calendar"],
   showViewSwitcher = true,
-  showCreateTask = true
+  showCreateTask = true,
+  canEditTasks = true
 }: {
   tasks: Task[];
   profiles: Profile[];
@@ -37,6 +38,7 @@ export function TasksView({
   availableViews?: ViewMode[];
   showViewSwitcher?: boolean;
   showCreateTask?: boolean;
+  canEditTasks?: boolean;
 }) {
   const [view, setView] = useState<ViewMode>(initialView);
   const [query, setQuery] = useState("");
@@ -135,6 +137,7 @@ export function TasksView({
           projects={projects}
           selectedTaskId={selectedTask?.id}
           redirectPath="/tasks"
+          canEditTasks={canEditTasks}
         />
       ) : null}
 

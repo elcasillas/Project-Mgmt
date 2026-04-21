@@ -175,6 +175,9 @@ using ((select auth.uid()) = id or public.is_admin())
 with check ((select auth.uid()) = id or public.is_admin());
 
 drop policy if exists "workspace_manage" on public.workspace_settings;
+drop policy if exists "workspace_manage_insert" on public.workspace_settings;
+drop policy if exists "workspace_manage_update" on public.workspace_settings;
+drop policy if exists "workspace_manage_delete" on public.workspace_settings;
 create policy "workspace_manage_insert"
 on public.workspace_settings for insert
 with check (public.is_admin());
@@ -187,6 +190,9 @@ on public.workspace_settings for delete
 using (public.is_admin());
 
 drop policy if exists "project_members_manage" on public.project_members;
+drop policy if exists "project_members_manage_insert" on public.project_members;
+drop policy if exists "project_members_manage_update" on public.project_members;
+drop policy if exists "project_members_manage_delete" on public.project_members;
 create policy "project_members_manage_insert"
 on public.project_members for insert
 with check (public.is_manager_or_admin() or public.is_project_member(project_id));
@@ -199,6 +205,9 @@ on public.project_members for delete
 using (public.is_manager_or_admin() or public.is_project_member(project_id));
 
 drop policy if exists "task_dependencies_manage" on public.task_dependencies;
+drop policy if exists "task_dependencies_manage_insert" on public.task_dependencies;
+drop policy if exists "task_dependencies_manage_update" on public.task_dependencies;
+drop policy if exists "task_dependencies_manage_delete" on public.task_dependencies;
 create policy "task_dependencies_manage_insert"
 on public.task_dependencies for insert
 with check (public.is_manager_or_admin());
@@ -211,6 +220,9 @@ on public.task_dependencies for delete
 using (public.is_manager_or_admin());
 
 drop policy if exists "attachments_manage" on public.attachments;
+drop policy if exists "attachments_manage_insert" on public.attachments;
+drop policy if exists "attachments_manage_update" on public.attachments;
+drop policy if exists "attachments_manage_delete" on public.attachments;
 create policy "attachments_manage_insert"
 on public.attachments for insert
 with check (uploaded_by = (select auth.uid()) or public.is_manager_or_admin());
@@ -225,8 +237,6 @@ using (uploaded_by = (select auth.uid()) or public.is_manager_or_admin());
 do $$
 declare
   policy_record record;
-  read_policy_record record;
-  read_expression text;
   using_expression text;
   check_expression text;
 begin
@@ -248,6 +258,11 @@ end $$;
 do $$
 declare
   policy_record record;
+  read_policy_schema text;
+  read_policy_table text;
+  read_policy_name text;
+  read_policy_qual text;
+  read_expression text;
   using_expression text;
   check_expression text;
 begin
@@ -260,27 +275,35 @@ begin
     using_expression := replace(replace(policy_record.qual, 'auth.uid()', '(select auth.uid())'), 'auth.role()', '(select auth.role())');
     check_expression := replace(replace(policy_record.with_check, 'auth.uid()', '(select auth.uid())'), 'auth.role()', '(select auth.role())');
 
+    read_policy_schema := null;
+    read_policy_table := null;
+    read_policy_name := null;
+    read_policy_qual := null;
+
     select schemaname, tablename, policyname, qual
-    into read_policy_record
+    into read_policy_schema, read_policy_table, read_policy_name, read_policy_qual
     from pg_policies
     where schemaname = policy_record.schemaname
       and tablename = policy_record.tablename
       and policyname = replace(policy_record.policyname, '_manage', '_read')
     limit 1;
 
-    if read_policy_record.policyname is not null and read_policy_record.qual is not null and using_expression is not null then
-      read_expression := replace(replace(read_policy_record.qual, 'auth.uid()', '(select auth.uid())'), 'auth.role()', '(select auth.role())');
+    if read_policy_name is not null and read_policy_qual is not null and using_expression is not null then
+      read_expression := replace(replace(read_policy_qual, 'auth.uid()', '(select auth.uid())'), 'auth.role()', '(select auth.role())');
       execute format(
         'alter policy %I on %I.%I using ((%s) or (%s))',
-        read_policy_record.policyname,
-        read_policy_record.schemaname,
-        read_policy_record.tablename,
+        read_policy_name,
+        read_policy_schema,
+        read_policy_table,
         read_expression,
         using_expression
       );
     end if;
 
     execute format('drop policy if exists %I on %I.%I', policy_record.policyname, policy_record.schemaname, policy_record.tablename);
+    execute format('drop policy if exists %I on %I.%I', policy_record.policyname || '_insert', policy_record.schemaname, policy_record.tablename);
+    execute format('drop policy if exists %I on %I.%I', policy_record.policyname || '_update', policy_record.schemaname, policy_record.tablename);
+    execute format('drop policy if exists %I on %I.%I', policy_record.policyname || '_delete', policy_record.schemaname, policy_record.tablename);
 
     if check_expression is not null then
       execute format(
